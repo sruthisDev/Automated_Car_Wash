@@ -4,6 +4,14 @@ export default function Footer() {
   const navigate = useNavigate()
   const location = useLocation()
 
+  const handleHome = () => {
+    if (location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      navigate('/')
+    }
+  }
+
   const scrollTo = (id) => {
     if (location.pathname === '/') {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
@@ -36,7 +44,7 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Quick Links</h4>
             <ul className="space-y-3">
-              <li><Link to="/" className="text-[#94A3B8] hover:text-white text-sm transition-colors">Home</Link></li>
+              <li><button onClick={handleHome} className="text-[#94A3B8] hover:text-white text-sm transition-colors bg-transparent border-none cursor-pointer">Home</button></li>
               <li><button onClick={() => scrollTo('services')} className="text-[#94A3B8] hover:text-white text-sm transition-colors bg-transparent border-none cursor-pointer">Services</button></li>
               <li><button onClick={() => scrollTo('memberships')} className="text-[#94A3B8] hover:text-white text-sm transition-colors bg-transparent border-none cursor-pointer">Memberships</button></li>
               <li><Link to="/about" className="text-[#94A3B8] hover:text-white text-sm transition-colors">About</Link></li>

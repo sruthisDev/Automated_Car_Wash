@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import axios from 'axios'
@@ -56,19 +56,28 @@ export default function ContactPage() {
     }
   }
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target) } }),
+      { threshold: 0.1 }
+    )
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div style={{ minHeight: '100vh', background: '#0A1628', fontFamily: "'Inter', system-ui, sans-serif" }}>
       <Navbar />
 
       {/* Page Header */}
       <section style={{ padding: '8rem 1.5rem 3rem', textAlign: 'center' }}>
-        <p style={{ color: '#3B82F6', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
+        <p className="reveal" style={{ color: '#3B82F6', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
           Contact Us
         </p>
-        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', marginBottom: '1rem' }}>
+        <h1 className="reveal reveal-d1" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', marginBottom: '1rem' }}>
           Get In Touch
         </h1>
-        <p style={{ color: '#94A3B8', fontSize: '1.125rem', maxWidth: '30rem', margin: '0 auto' }}>
+        <p className="reveal reveal-d2" style={{ color: '#94A3B8', fontSize: '1.125rem', maxWidth: '30rem', margin: '0 auto' }}>
           We&apos;re here to help — reach out anytime and we&apos;ll get back to you within 24 hours.
         </p>
       </section>
@@ -79,8 +88,8 @@ export default function ContactPage() {
           {[
             { icon: '📞', title: 'Call Us', lines: ['+1 (555) 123-4567', 'Mon–Sat: 8am – 7pm'], href: 'tel:+15551234567' },
             { icon: '📧', title: 'Email Us', lines: ['hello@luxewash.com', 'We reply within 24 hours'], href: 'mailto:hello@luxewash.com' },
-          ].map(card => (
-            <a key={card.title} href={card.href} style={{ ...cardBase, padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', textDecoration: 'none', cursor: 'pointer' }}>
+          ].map((card, i) => (
+            <a key={card.title} href={card.href} className={`reveal reveal-d${i + 1}`} style={{ ...cardBase, padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', textDecoration: 'none', cursor: 'pointer' }}>
               <div style={{ width: '3rem', height: '3rem', borderRadius: '0.75rem', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.375rem' }}>
                 {card.icon}
               </div>
@@ -98,7 +107,7 @@ export default function ContactPage() {
       {/* Contact Form */}
       <section style={{ padding: '2rem 1.5rem 4rem' }}>
         <div style={{ maxWidth: '40rem', margin: '0 auto' }}>
-          <div style={{ ...cardBase, padding: '2.5rem' }}>
+          <div className="reveal" style={{ ...cardBase, padding: '2.5rem' }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff', marginBottom: '1.75rem', letterSpacing: '-0.02em' }}>Send a Message</h2>
 
             {status === 'success' && (
@@ -164,7 +173,7 @@ export default function ContactPage() {
       {/* Map + Location */}
       <section style={{ padding: '0 1.5rem 5rem' }}>
         <div style={{ maxWidth: '56rem', margin: '0 auto' }}>
-          <div style={{ ...cardBase, overflow: 'hidden' }}>
+          <div className="reveal" style={{ ...cardBase, overflow: 'hidden' }}>
             <div style={{ width: '100%', height: '16rem', background: 'rgba(6,14,26,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ textAlign: 'center' }}>
                 <span style={{ fontSize: '3.5rem', display: 'block', marginBottom: '0.75rem' }}>📍</span>

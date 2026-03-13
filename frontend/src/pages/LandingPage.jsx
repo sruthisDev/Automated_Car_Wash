@@ -4,68 +4,46 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
 const services = [
-  { id: 'basic', icon: '🚿', name: 'Basic Wash', price: 12, description: 'A thorough exterior rinse with premium soap, high-pressure wash, and air dry. Perfect for a quick refresh.', features: ['Exterior rinse', 'Premium foam soap', 'High-pressure wash', 'Air dry'] },
-  { id: 'deluxe', icon: '✨', name: 'Deluxe Wash', price: 22, description: 'Everything in Basic plus interior vacuuming and streak-free window cleaning inside and out.', features: ['Everything in Basic', 'Interior vacuum', 'Window cleaning', 'Dashboard wipe'] },
-  { id: 'premium', icon: '💎', name: 'Premium Wash', price: 35, description: 'Our full-detail experience — hand wax, tire shine, leather conditioning, and complete interior detail.', features: ['Everything in Deluxe', 'Hand wax & polish', 'Tire shine', 'Full interior detail'] },
+  { id: 'basic',   icon: '🚿', name: 'Basic Wash',   price: 12, description: 'A thorough exterior rinse with premium soap, high-pressure wash, and air dry. Perfect for a quick refresh.',                                               features: ['Exterior rinse', 'Premium foam soap', 'High-pressure wash', 'Air dry'] },
+  { id: 'deluxe',  icon: '✨', name: 'Deluxe Wash',  price: 22, description: 'Everything in Basic plus interior vacuuming and streak-free window cleaning inside and out.',                                                             features: ['Everything in Basic', 'Interior vacuum', 'Window cleaning', 'Dashboard wipe'] },
+  { id: 'premium', icon: '💎', name: 'Premium Wash', price: 35, description: 'Our full-detail experience — hand wax, tire shine, leather conditioning, and complete interior detail.',                                                 features: ['Everything in Deluxe', 'Hand wax & polish', 'Tire shine', 'Full interior detail'] },
 ]
 
 const memberships = [
-  { id: 'standard', name: 'Standard', price: 29, highlight: false, description: 'Great for everyday drivers who want a consistently clean car.', includes: ['Unlimited Basic Washes', 'Priority booking', 'Member discounts'], notIncluded: ['Deluxe & Premium access', 'Priority lane'] },
-  { id: 'premium', name: 'Premium', price: 49, highlight: true, description: 'Most popular — covers all your regular car care needs.', includes: ['Unlimited Basic & Deluxe Washes', 'Interior vacuum included', 'Window cleaning', 'Priority booking'], notIncluded: ['Premium Wash', 'Priority lane'] },
-  { id: 'premium_plus', name: 'Premium Plus', price: 79, highlight: false, description: 'The ultimate LuxeWash experience — nothing held back.', includes: ['Unlimited All Washes', 'Priority lane access', 'Free monthly full detail', 'Dedicated support'], notIncluded: [] },
+  { id: 'standard',    name: 'Standard',     price: 29, highlight: false, description: 'Great for everyday drivers who want a consistently clean car.',         includes: ['Unlimited Basic Washes', 'Priority booking', 'Member discounts'],                                                              notIncluded: ['Deluxe & Premium access', 'Priority lane'] },
+  { id: 'premium',     name: 'Premium',      price: 49, highlight: true,  description: 'Most popular — covers all your regular car care needs.',                includes: ['Unlimited Basic & Deluxe Washes', 'Interior vacuum included', 'Window cleaning', 'Priority booking'],                        notIncluded: ['Premium Wash', 'Priority lane'] },
+  { id: 'premium_plus',name: 'Premium Plus', price: 79, highlight: false, description: 'The ultimate LuxeWash experience — nothing held back.',                includes: ['Unlimited All Washes', 'Priority lane access', 'Free monthly full detail', 'Dedicated support'],                            notIncluded: [] },
 ]
 
 const testimonials = [
-  { name: 'Sarah M.', rating: 5, text: 'LuxeWash is the only place I trust with my car. The Premium Plus membership is absolutely worth every penny.' },
-  { name: 'James T.', rating: 5, text: 'Booked a Deluxe wash online in under a minute. Car came out spotless. Will never go anywhere else.' },
-  { name: 'Priya K.', rating: 5, text: 'The staff is professional and the results are incredible. My car looks showroom-fresh every single time.' },
+  { name: 'Sarah M.', initials: 'SM', rating: 5, text: 'LuxeWash is the only place I trust with my car. The Premium Plus membership is absolutely worth every penny.' },
+  { name: 'James T.', initials: 'JT', rating: 5, text: 'Booked a Deluxe wash online in under a minute. Car came out spotless. Will never go anywhere else.' },
+  { name: 'Priya K.', initials: 'PK', rating: 5, text: 'The staff is professional and the results are incredible. My car looks showroom-fresh every single time.' },
 ]
 
-const cardBase = {
-  background: 'linear-gradient(145deg, #0F2040 0%, #0d1b33 100%)',
-  border: '1px solid rgba(255,255,255,0.08)',
-  boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
-  transition: 'all 0.25s ease',
-}
+const steps = [
+  { icon: '📱', title: 'Choose Your Service', desc: 'Pick from our wash packages or membership plans — no commitment required.' },
+  { icon: '📅', title: 'Book a Time Slot',    desc: 'Select a date and time that works for you. Same-day slots often available.' },
+  { icon: '🚗', title: 'Drive In & Relax',   desc: 'Arrive at your appointment and let our expert team handle the rest.' },
+]
 
-const onCardEnter = (e) => {
-  e.currentTarget.style.border = '1px solid rgba(59,130,246,0.4)'
-  e.currentTarget.style.boxShadow = '0 8px 40px rgba(59,130,246,0.15), 0 4px 24px rgba(0,0,0,0.4)'
-  e.currentTarget.style.transform = 'translateY(-4px)'
-}
-const onCardLeave = (e) => {
-  e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)'
-  e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.35)'
-  e.currentTarget.style.transform = 'translateY(0)'
-}
-
-const btnBlue = {
-  background: 'linear-gradient(135deg, #3B82F6, #2563EB)',
-  boxShadow: '0 4px 20px rgba(59,130,246,0.35)',
-  border: 'none',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-}
-const onBtnEnter = (e) => {
-  e.currentTarget.style.boxShadow = '0 6px 28px rgba(59,130,246,0.55)'
-  e.currentTarget.style.transform = 'translateY(-1px)'
-}
-const onBtnLeave = (e) => {
-  e.currentTarget.style.boxShadow = '0 4px 20px rgba(59,130,246,0.35)'
-  e.currentTarget.style.transform = 'translateY(0)'
-}
+const trustItems = [
+  { icon: '⚡', label: 'Instant Booking' },
+  { icon: '🌿', label: 'Eco-Friendly Products' },
+  { icon: '🔒', label: 'Satisfaction Guaranteed' },
+  { icon: '⭐', label: '5-Star Rated Service' },
+]
 
 function CheckIcon() {
   return (
-    <svg style={{ width: '1rem', height: '1rem', color: '#3B82F6', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg style={{ width: '0.875rem', height: '0.875rem', color: '#3B82F6', flexShrink: 0, marginTop: '1px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
     </svg>
   )
 }
-
 function XIcon() {
   return (
-    <svg style={{ width: '1rem', height: '1rem', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg style={{ width: '0.875rem', height: '0.875rem', color: 'rgba(255,255,255,0.18)', flexShrink: 0, marginTop: '1px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
     </svg>
   )
@@ -81,102 +59,155 @@ export default function LandingPage() {
     }
   }, [location])
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target) } }),
+      { threshold: 0.1 }
+    )
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
+  const glass = {
+    background: 'rgba(12, 24, 48, 0.65)',
+    backdropFilter: 'blur(14px)',
+    WebkitBackdropFilter: 'blur(14px)',
+    border: '1px solid rgba(255,255,255,0.07)',
+    borderRadius: '1rem',
+    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+  }
+  const onCardHover = (e) => {
+    e.currentTarget.style.border = '1px solid rgba(59,130,246,0.35)'
+    e.currentTarget.style.boxShadow = '0 20px 60px rgba(59,130,246,0.12), 0 8px 24px rgba(0,0,0,0.35)'
+    e.currentTarget.style.transform = 'translateY(-6px)'
+  }
+  const onCardOut = (e) => {
+    e.currentTarget.style.border = '1px solid rgba(255,255,255,0.07)'
+    e.currentTarget.style.boxShadow = 'none'
+    e.currentTarget.style.transform = 'translateY(0)'
+  }
+  const btn = {
+    background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+    border: 'none', cursor: 'pointer', color: '#fff', fontWeight: 600,
+    borderRadius: '0.75rem', transition: 'all 0.25s ease',
+    boxShadow: '0 4px 20px rgba(59,130,246,0.3)',
+  }
+  const onBtnIn  = (e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(59,130,246,0.55)' }
+  const onBtnOut = (e) => { e.currentTarget.style.transform = 'translateY(0)';    e.currentTarget.style.boxShadow = '0 4px 20px rgba(59,130,246,0.3)' }
+
+  const sectionLabel = { color: '#3B82F6', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.875rem' }
+  const sectionHeading = { fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.025em', marginBottom: '1rem' }
+  const sectionSub = { color: '#94A3B8', fontSize: '1.0625rem', maxWidth: '34rem', margin: '0 auto', lineHeight: 1.7 }
+
   return (
-    <div style={{ minHeight: '100vh', background: '#0A1628', fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#060d1a', fontFamily: "'Inter', system-ui, sans-serif", overflowX: 'hidden' }}>
       <Navbar />
 
-      {/* ── HERO ─────────────────────────────────────── */}
-      <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-        {/* Background layers */}
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59,130,246,0.18) 0%, transparent 70%), linear-gradient(180deg, #0A1628 0%, #0d1f3c 50%, #0A1628 100%)' }} />
-        <div style={{ position: 'absolute', inset: 0, opacity: 0.035, backgroundImage: 'linear-gradient(rgba(59,130,246,1) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-        <div style={{ position: 'absolute', top: '33%', left: '25%', width: '18rem', height: '18rem', borderRadius: '9999px', background: 'radial-gradient(circle, rgba(59,130,246,0.12), transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '8rem', background: 'linear-gradient(to bottom, transparent, #0A1628)', pointerEvents: 'none' }} />
+      {/* ── HERO ─────────────────────────────────── */}
+      <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingTop: '4rem' }}>
 
-        <div style={{ position: 'relative', zIndex: 10, maxWidth: '56rem', margin: '0 auto', padding: '0 1.5rem', textAlign: 'center' }}>
+        {/* Animated orbs */}
+        <div className="orb-1" style={{ position: 'absolute', top: '12%', left: '8%',  width: '32rem', height: '32rem', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%)', filter: 'blur(50px)', pointerEvents: 'none' }} />
+        <div className="orb-2" style={{ position: 'absolute', top: '25%', right: '5%', width: '26rem', height: '26rem', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)', filter: 'blur(50px)', pointerEvents: 'none' }} />
+        <div className="orb-3" style={{ position: 'absolute', bottom: '20%', left: '30%', width: '22rem', height: '22rem', borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,182,212,0.09) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+
+        {/* Subtle grid */}
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(59,130,246,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.035) 1px, transparent 1px)', backgroundSize: '80px 80px', pointerEvents: 'none' }} />
+        {/* Bottom fade */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '14rem', background: 'linear-gradient(to bottom, transparent, #060d1a)', pointerEvents: 'none' }} />
+
+        <div style={{ position: 'relative', zIndex: 10, maxWidth: '60rem', margin: '0 auto', padding: '0 1.5rem', textAlign: 'center' }}>
+
           {/* Badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', padding: '0.5rem 1rem', borderRadius: '9999px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)' }}>
-            <div className="animate-pulse" style={{ width: '6px', height: '6px', borderRadius: '9999px', background: '#3B82F6' }} />
-            <span style={{ color: '#3B82F6', fontSize: '0.875rem', fontWeight: 500, letterSpacing: '0.025em' }}>Premium Auto Care — Est. 2018</span>
+          <div className="reveal" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.625rem', marginBottom: '2rem', padding: '0.375rem 1rem 0.375rem 0.625rem', borderRadius: '9999px', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', backdropFilter: 'blur(8px)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '1.25rem', height: '1.25rem', borderRadius: '50%', background: 'rgba(59,130,246,0.2)' }}>
+              <span className="animate-pulse" style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#3B82F6', display: 'block' }} />
+            </span>
+            <span style={{ color: '#93c5fd', fontSize: '0.8125rem', fontWeight: 500, letterSpacing: '0.02em' }}>Premium Auto Care · Est. 2018</span>
           </div>
 
           {/* Headline */}
-          <h1 style={{ fontSize: 'clamp(2.5rem, 7vw, 4.5rem)', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1, color: '#fff', marginBottom: '1.5rem' }}>
-            The Cleanest Ride
+          <h1 className="reveal reveal-d1" style={{ fontSize: 'clamp(2.75rem, 8vw, 5rem)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.05, color: '#fff', marginBottom: '1.5rem' }}>
+            Your Car Deserves
             <br />
-            <span style={{ background: 'linear-gradient(135deg, #3B82F6, #93c5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              in Town
-            </span>
+            <span className="shimmer-gradient">The Best Care</span>
           </h1>
 
-          <p style={{ color: '#94A3B8', fontSize: '1.125rem', lineHeight: 1.75, maxWidth: '40rem', margin: '0 auto 2.5rem' }}>
-            Professional car wash and detailing services that leave your vehicle looking showroom-fresh. Book in minutes, results that last.
+          <p className="reveal reveal-d2" style={{ color: '#94A3B8', fontSize: '1.125rem', lineHeight: 1.8, maxWidth: '38rem', margin: '0 auto 2.5rem' }}>
+            Professional car wash and detailing that leaves your vehicle looking showroom-fresh. Book in minutes, results that last.
           </p>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-            <button
-              onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
-              style={{ ...btnBlue, padding: '1rem 2rem', fontWeight: 600, borderRadius: '0.75rem', fontSize: '1rem', color: '#fff' }}
-              onMouseEnter={onBtnEnter} onMouseLeave={onBtnLeave}
-            >
-              Book a Wash
+          <div className="reveal reveal-d3" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.875rem', justifyContent: 'center' }}>
+            <button onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
+              style={{ ...btn, padding: '0.875rem 2rem', fontSize: '0.9375rem' }}
+              onMouseEnter={onBtnIn} onMouseLeave={onBtnOut}>
+              Book a Wash →
             </button>
-            <button
-              onClick={() => document.getElementById('memberships')?.scrollIntoView({ behavior: 'smooth' })}
-              style={{ padding: '1rem 2rem', fontWeight: 600, borderRadius: '0.75rem', fontSize: '1rem', color: '#fff', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer', transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.background = 'transparent' }}
-            >
+            <button onClick={() => document.getElementById('memberships')?.scrollIntoView({ behavior: 'smooth' })}
+              style={{ padding: '0.875rem 2rem', fontWeight: 600, borderRadius: '0.75rem', fontSize: '0.9375rem', color: '#e2e8f0', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', transition: 'all 0.25s ease', backdropFilter: 'blur(8px)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)' }}>
               View Memberships
             </button>
           </div>
 
           {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="reveal reveal-d4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem', marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             {[{ value: '5,000+', label: 'Happy Members' }, { value: '8+', label: 'Years in Business' }, { value: '99.99%', label: 'Satisfaction Rate' }].map(s => (
               <div key={s.label}>
-                <p style={{ fontSize: '1.875rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>{s.value}</p>
-                <p style={{ color: '#94A3B8', fontSize: '0.875rem', marginTop: '0.25rem' }}>{s.label}</p>
+                <p style={{ fontSize: '2rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.03em' }}>{s.value}</p>
+                <p style={{ color: '#475569', fontSize: '0.8125rem', marginTop: '0.25rem', fontWeight: 500 }}>{s.label}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── SERVICES ─────────────────────────────────── */}
-      <section id="services" style={{ padding: '6rem 1.5rem' }}>
-        <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <p style={{ color: '#3B82F6', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>What We Offer</p>
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', marginBottom: '1rem' }}>Our Services</h2>
-            <p style={{ color: '#94A3B8', fontSize: '1.125rem', maxWidth: '36rem', margin: '0 auto' }}>One-time wash services with no commitment. Pick what you need, pay only for that.</p>
+      {/* ── TRUST BAR ─────────────────────────────── */}
+      <section style={{ padding: '0 1.5rem 2.5rem' }}>
+        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
+          <div className="reveal" style={{ ...glass, padding: '1.5rem 2.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '1rem' }}>
+            {trustItems.map(item => (
+              <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center', padding: '0.5rem' }}>
+                <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
+                <span style={{ color: '#94A3B8', fontSize: '0.875rem', fontWeight: 500 }}>{item.label}</span>
+              </div>
+            ))}
           </div>
+        </div>
+      </section>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
-            {services.map(service => (
-              <div key={service.id} style={{ ...cardBase, borderRadius: '1rem', padding: '2rem' }} onMouseEnter={onCardEnter} onMouseLeave={onCardLeave}>
-                <div style={{ fontSize: '2.25rem', marginBottom: '1.25rem' }}>{service.icon}</div>
-                <h3 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>{service.name}</h3>
-                <p style={{ color: '#94A3B8', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>{service.description}</p>
-
-                <ul style={{ listStyle: 'none', marginBottom: '2rem' }}>
+      {/* ── SERVICES ──────────────────────────────── */}
+      <section id="services" style={{ padding: '1.5rem 1.5rem 3.5rem' }}>
+        <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+          <div className="reveal" style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <p style={sectionLabel}>What We Offer</p>
+            <h2 style={sectionHeading}>Our Services</h2>
+            <p style={sectionSub}>One-time wash services with no commitment. Pick what you need, pay only for that.</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '1.5rem' }}>
+            {services.map((service, i) => (
+              <div key={service.id} className={`reveal reveal-d${i + 1}`} style={{ ...glass, padding: '2rem', display: 'flex', flexDirection: 'column' }} onMouseEnter={onCardHover} onMouseLeave={onCardOut}>
+                <div style={{ width: '3rem', height: '3rem', borderRadius: '0.875rem', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', marginBottom: '1.25rem' }}>
+                  {service.icon}
+                </div>
+                <h3 style={{ color: '#fff', fontSize: '1.1875rem', fontWeight: 700, marginBottom: '0.5rem' }}>{service.name}</h3>
+                <p style={{ color: '#64748B', fontSize: '0.875rem', lineHeight: 1.65, marginBottom: '1.5rem' }}>{service.description}</p>
+                <ul style={{ listStyle: 'none', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.625rem', flexGrow: 1 }}>
                   {service.features.map(f => (
-                    <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', color: '#94A3B8', fontSize: '0.875rem', marginBottom: '0.625rem' }}>
+                    <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem', color: '#94A3B8', fontSize: '0.875rem' }}>
                       <CheckIcon /> {f}
                     </li>
                   ))}
                 </ul>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 'auto' }}>
                   <div>
-                    <span style={{ fontSize: '1.875rem', fontWeight: 700, color: '#fff' }}>${service.price}</span>
-                    <span style={{ color: '#94A3B8', fontSize: '0.875rem', marginLeft: '0.375rem' }}>one-time</span>
+                    <span style={{ fontSize: '1.875rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>${service.price}</span>
+                    <span style={{ color: '#475569', fontSize: '0.8125rem', marginLeft: '0.375rem' }}>one-time</span>
                   </div>
-                  <button
-                    onClick={() => navigate('/checkout/service', { state: { preselected: service.id } })}
-                    style={{ ...btnBlue, padding: '0.625rem 1.25rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#fff' }}
-                    onMouseEnter={onBtnEnter} onMouseLeave={onBtnLeave}
-                  >
+                  <button onClick={() => navigate('/checkout/service', { state: { preselected: service.id } })}
+                    style={{ ...btn, padding: '0.625rem 1.25rem', fontSize: '0.875rem' }}
+                    onMouseEnter={onBtnIn} onMouseLeave={onBtnOut}>
                     Book Now
                   </button>
                 </div>
@@ -186,66 +217,93 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── MEMBERSHIPS ──────────────────────────────── */}
-      <section id="memberships" style={{ padding: '6rem 1.5rem', background: 'linear-gradient(180deg, #060e1a 0%, #0A1628 100%)' }}>
-        <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <p style={{ color: '#3B82F6', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Save More</p>
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', marginBottom: '1rem' }}>Membership Plans</h2>
-            <p style={{ color: '#94A3B8', fontSize: '1.125rem', maxWidth: '36rem', margin: '0 auto' }}>Unlimited washes, exclusive perks, and the best value for regular drivers.</p>
+      {/* ── HOW IT WORKS ──────────────────────────── */}
+      <section style={{ padding: '3rem 1.5rem 3.5rem', background: 'linear-gradient(180deg, #060d1a 0%, #080f1f 50%, #060d1a 100%)' }}>
+        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
+          <div className="reveal" style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <p style={sectionLabel}>Simple Process</p>
+            <h2 style={sectionHeading}>How It Works</h2>
+            <p style={{ ...sectionSub, maxWidth: '32rem' }}>Getting your car cleaned has never been easier. Three simple steps and you're done.</p>
           </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '2rem' }}>
+            {steps.map((step, i) => (
+              <div key={step.title} className={`reveal reveal-d${i + 1}`} style={{ textAlign: 'center', padding: '2rem 1.5rem' }}>
+                <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '4.5rem', height: '4.5rem', borderRadius: '50%', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', marginBottom: '1.5rem' }}>
+                  <span style={{ fontSize: '1.75rem' }}>{step.icon}</span>
+                  <span style={{ position: 'absolute', top: '-0.5rem', right: '-0.5rem', width: '1.5rem', height: '1.5rem', borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6, #2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.625rem', fontWeight: 800, color: '#fff', boxShadow: '0 2px 8px rgba(59,130,246,0.5)' }}>
+                    {i + 1}
+                  </span>
+                </div>
+                <h3 style={{ color: '#fff', fontSize: '1.125rem', fontWeight: 700, marginBottom: '0.75rem' }}>{step.title}</h3>
+                <p style={{ color: '#64748B', fontSize: '0.875rem', lineHeight: 1.7 }}>{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
-            {memberships.map(plan => (
-              <div key={plan.id} style={{
-                position: 'relative',
-                borderRadius: '1rem',
-                padding: '2rem',
-                transition: 'all 0.25s ease',
-                ...(plan.highlight
-                  ? { background: 'linear-gradient(145deg, #0F2040, #132a50)', border: '1px solid rgba(59,130,246,0.5)', boxShadow: '0 8px 40px rgba(59,130,246,0.2), 0 4px 24px rgba(0,0,0,0.4)' }
-                  : cardBase)
-              }}
-                onMouseEnter={!plan.highlight ? onCardEnter : undefined}
-                onMouseLeave={!plan.highlight ? onCardLeave : undefined}
+      {/* ── MEMBERSHIPS ───────────────────────────── */}
+      <section id="memberships" style={{ padding: '1.5rem 1.5rem 3.5rem' }}>
+        <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+          <div className="reveal" style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <p style={sectionLabel}>Save More</p>
+            <h2 style={sectionHeading}>Membership Plans</h2>
+            <p style={sectionSub}>Unlimited washes, exclusive perks, and the best value for regular drivers.</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'center' }}>
+            {memberships.map((plan, i) => (
+              <div key={plan.id} className={`reveal reveal-d${i + 1}`}
+                style={{
+                  position: 'relative',
+                  ...glass,
+                  padding: '2rem',
+                  ...(plan.highlight ? {
+                    background: 'rgba(18, 38, 76, 0.8)',
+                    border: '1px solid rgba(59,130,246,0.4)',
+                    boxShadow: '0 0 0 1px rgba(59,130,246,0.08), 0 24px 60px rgba(59,130,246,0.15)',
+                  } : {})
+                }}
+                onMouseEnter={!plan.highlight ? onCardHover : undefined}
+                onMouseLeave={!plan.highlight ? onCardOut : undefined}
               >
                 {plan.highlight && (
-                  <div style={{ position: 'absolute', top: '-1rem', left: '50%', transform: 'translateX(-50%)' }}>
-                    <span style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)', boxShadow: '0 2px 12px rgba(59,130,246,0.4)', color: '#fff', fontSize: '0.7rem', fontWeight: 700, padding: '0.3rem 1rem', borderRadius: '9999px', whiteSpace: 'nowrap' }}>
+                  <div style={{ position: 'absolute', top: '-0.875rem', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
+                    <span style={{ ...btn, padding: '0.25rem 1rem', borderRadius: '9999px', fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.07em', display: 'inline-block' }}>
                       MOST POPULAR
                     </span>
                   </div>
                 )}
-
-                <h3 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>{plan.name}</h3>
-                <p style={{ color: '#94A3B8', fontSize: '0.875rem', marginBottom: '1.5rem' }}>{plan.description}</p>
-
-                <div style={{ marginBottom: '2rem' }}>
-                  <span style={{ fontSize: '3rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em' }}>${plan.price}</span>
-                  <span style={{ color: '#94A3B8', fontSize: '0.875rem', marginLeft: '0.5rem' }}>/month</span>
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <h3 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.375rem' }}>{plan.name}</h3>
+                  <p style={{ color: '#64748B', fontSize: '0.8125rem', lineHeight: 1.6 }}>{plan.description}</p>
                 </div>
-
-                <ul style={{ listStyle: 'none', marginBottom: '2rem' }}>
+                <div style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize: '2.75rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.04em' }}>${plan.price}</span>
+                  <span style={{ color: '#475569', fontSize: '0.875rem', marginLeft: '0.5rem' }}>/month</span>
+                </div>
+                <ul style={{ listStyle: 'none', marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {plan.includes.map(item => (
-                    <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', color: '#94A3B8', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-                      <CheckIcon /> {item}
+                    <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem', color: '#94A3B8', fontSize: '0.875rem' }}>
+                      <CheckIcon /> <span>{item}</span>
                     </li>
                   ))}
                   {plan.notIncluded.map(item => (
-                    <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', color: 'rgba(255,255,255,0.2)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-                      <XIcon /> {item}
+                    <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem', color: 'rgba(255,255,255,0.2)', fontSize: '0.875rem' }}>
+                      <XIcon /> <span>{item}</span>
                     </li>
                   ))}
                 </ul>
-
                 <button
                   onClick={() => navigate('/checkout/membership', { state: { preselected: plan.id } })}
                   style={{
-                    width: '100%', padding: '0.875rem', borderRadius: '0.75rem', fontSize: '0.875rem', fontWeight: 600, color: '#fff', cursor: 'pointer', transition: 'all 0.2s',
-                    ...(plan.highlight ? btnBlue : { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' })
+                    width: '100%', padding: '0.875rem', borderRadius: '0.75rem', fontSize: '0.875rem',
+                    fontWeight: 600, color: '#fff', cursor: 'pointer', transition: 'all 0.25s ease',
+                    ...(plan.highlight
+                      ? { background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', border: 'none', boxShadow: '0 4px 20px rgba(59,130,246,0.3)' }
+                      : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' })
                   }}
-                  onMouseEnter={plan.highlight ? onBtnEnter : e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)' }}
-                  onMouseLeave={plan.highlight ? onBtnLeave : e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
+                  onMouseEnter={plan.highlight ? onBtnIn : e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+                  onMouseLeave={plan.highlight ? onBtnOut : e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
                 >
                   Get Started
                 </button>
@@ -255,32 +313,53 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ─────────────────────────────── */}
-      <section style={{ padding: '6rem 1.5rem' }}>
+      {/* ── TESTIMONIALS ──────────────────────────── */}
+      <section style={{ padding: '3rem 1.5rem 3.5rem', background: 'linear-gradient(180deg, #060d1a 0%, #080f1f 100%)' }}>
         <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <p style={{ color: '#3B82F6', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Reviews</p>
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', marginBottom: '1rem' }}>What Our Members Say</h2>
-            <p style={{ color: '#94A3B8', fontSize: '1.125rem' }}>Trusted by thousands of happy drivers.</p>
+          <div className="reveal" style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <p style={sectionLabel}>Reviews</p>
+            <h2 style={sectionHeading}>What Our Members Say</h2>
+            <p style={{ ...sectionSub, maxWidth: '28rem' }}>Trusted by thousands of happy drivers across the city.</p>
           </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
-            {testimonials.map(t => (
-              <div key={t.name} style={{ ...cardBase, borderRadius: '1rem', padding: '2rem' }}>
-                <div style={{ display: 'flex', gap: '2px', marginBottom: '1.25rem' }}>
+            {testimonials.map((t, i) => (
+              <div key={t.name} className={`reveal reveal-d${i + 1}`} style={{ ...glass, padding: '2rem' }} onMouseEnter={onCardHover} onMouseLeave={onCardOut}>
+                <div style={{ color: '#3B82F6', fontSize: '4rem', lineHeight: 1, marginBottom: '0.25rem', fontFamily: 'Georgia, serif', opacity: 0.4, userSelect: 'none', letterSpacing: '-0.05em' }}>&ldquo;</div>
+                <div style={{ display: 'flex', gap: '2px', marginBottom: '1rem' }}>
                   {Array.from({ length: t.rating }).map((_, i) => (
-                    <span key={i} style={{ color: '#facc15', fontSize: '1.125rem' }}>★</span>
+                    <span key={i} style={{ color: '#FBBF24', fontSize: '0.875rem' }}>★</span>
                   ))}
                 </div>
-                <p style={{ color: '#94A3B8', fontSize: '0.875rem', lineHeight: 1.7, fontStyle: 'italic', marginBottom: '1.5rem' }}>"{t.text}"</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3B82F6', fontWeight: 700, fontSize: '0.875rem', flexShrink: 0 }}>
-                    {t.name[0]}
+                <p style={{ color: '#94A3B8', fontSize: '0.9375rem', lineHeight: 1.75, marginBottom: '1.5rem', fontStyle: 'italic' }}>{t.text}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.75rem', flexShrink: 0 }}>
+                    {t.initials}
                   </div>
-                  <span style={{ color: '#fff', fontWeight: 600, fontSize: '0.875rem' }}>{t.name}</span>
+                  <span style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '0.875rem' }}>{t.name}</span>
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ───────────────────────────────────── */}
+      <section style={{ padding: '3rem 1.5rem 4rem' }}>
+        <div style={{ maxWidth: '56rem', margin: '0 auto' }}>
+          <div className="reveal" style={{ position: 'relative', borderRadius: '1.5rem', padding: '4rem 3rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(124,58,237,0.14) 100%)', border: '1px solid rgba(59,130,246,0.22)', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '-3rem',   right: '-3rem', width: '14rem', height: '14rem', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.2) 0%, transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: '-2rem', left: '-2rem', width: '12rem', height: '12rem', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <h2 style={{ ...sectionHeading, marginBottom: '1rem' }}>Ready to Experience the Difference?</h2>
+              <p style={{ color: '#94A3B8', fontSize: '1.0625rem', marginBottom: '2rem', lineHeight: 1.7, maxWidth: '32rem', margin: '0 auto 2rem' }}>
+                Join thousands of happy customers. Book your first wash today and see why we're the city's most trusted car care service.
+              </p>
+              <button onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
+                style={{ ...btn, padding: '1rem 2.5rem', fontSize: '1rem' }}
+                onMouseEnter={onBtnIn} onMouseLeave={onBtnOut}>
+                Book Your Wash →
+              </button>
+            </div>
           </div>
         </div>
       </section>

@@ -15,6 +15,15 @@ export default function Navbar() {
 
   const isLanding = location.pathname === '/'
 
+  const handleHome = () => {
+    setMenuOpen(false)
+    if (isLanding) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      navigate('/')
+    }
+  }
+
   const handleNavLink = (sectionId) => {
     setMenuOpen(false)
     if (isLanding) {
@@ -56,9 +65,9 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
-          <Link to="/" className="text-[#94A3B8] hover:text-white transition-colors text-sm font-medium">
+          <button onClick={handleHome} className="text-[#94A3B8] hover:text-white transition-colors text-sm font-medium bg-transparent border-none cursor-pointer">
             Home
-          </Link>
+          </button>
           <button
             onClick={() => handleNavLink('services')}
             className="text-[#94A3B8] hover:text-white transition-colors text-sm font-medium bg-transparent border-none cursor-pointer"
@@ -149,7 +158,7 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden bg-[#0F2040] border-t border-white/10 px-6 py-4 flex flex-col gap-4">
-          <Link to="/" onClick={() => setMenuOpen(false)} className="text-[#94A3B8] hover:text-white text-sm">Home</Link>
+          <button onClick={handleHome} className="text-left text-[#94A3B8] hover:text-white text-sm bg-transparent border-none cursor-pointer">Home</button>
           <button onClick={() => handleNavLink('services')} className="text-left text-[#94A3B8] hover:text-white text-sm bg-transparent border-none cursor-pointer">Services</button>
           <button onClick={() => handleNavLink('memberships')} className="text-left text-[#94A3B8] hover:text-white text-sm bg-transparent border-none cursor-pointer">Memberships</button>
           <Link to="/about" onClick={() => setMenuOpen(false)} className="text-[#94A3B8] hover:text-white text-sm">About</Link>

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
@@ -78,17 +79,26 @@ const onBtnLeave = (e) => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(5
 export default function AboutPage() {
   const navigate = useNavigate()
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target) } }),
+      { threshold: 0.1 }
+    )
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div style={{ minHeight: '100vh', background: '#0A1628', fontFamily: "'Inter', system-ui, sans-serif" }}>
       <Navbar />
 
       {/* Page Header */}
       <section style={{ paddingTop: '8rem', paddingBottom: '4rem', textAlign: 'center', padding: '8rem 1.5rem 4rem' }}>
-        <p style={{ color: '#3B82F6', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Our Story</p>
-        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', marginBottom: '1rem' }}>
+        <p className="reveal" style={{ color: '#3B82F6', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Our Story</p>
+        <h1 className="reveal reveal-d1" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', marginBottom: '1rem' }}>
           About LuxeWash
         </h1>
-        <p style={{ color: '#94A3B8', fontSize: '1.125rem', maxWidth: '30rem', margin: '0 auto' }}>
+        <p className="reveal reveal-d2" style={{ color: '#94A3B8', fontSize: '1.125rem', maxWidth: '30rem', margin: '0 auto' }}>
           More than a car wash — a commitment to quality.
         </p>
       </section>
@@ -96,10 +106,10 @@ export default function AboutPage() {
       {/* Our Story */}
       <section style={{ padding: '2rem 1.5rem 5rem' }}>
         <div style={{ maxWidth: '64rem', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '3rem', alignItems: 'center' }}>
-          <div style={{ ...cardBase, padding: '2rem', minHeight: '18rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="reveal reveal-d1" style={{ ...cardBase, padding: '2rem', minHeight: '18rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontSize: '5rem' }}>🚗</span>
           </div>
-          <div>
+          <div className="reveal reveal-d2">
             <h2 style={{ fontSize: '1.875rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', marginBottom: '1.25rem' }}>Our Story</h2>
             <p style={{ color: '#94A3B8', lineHeight: 1.75, marginBottom: '1rem', fontSize: '0.9375rem' }}>
               Founded in 2018, LuxeWash started as a single-bay operation with one simple belief — every car deserves a showroom finish. What began as a passion for detail grew into a full-service auto care destination trusted by thousands of members right here in the community.
@@ -114,14 +124,14 @@ export default function AboutPage() {
       {/* Our Values */}
       <section style={{ padding: '5rem 1.5rem', background: 'linear-gradient(180deg, #060e1a 0%, #0A1628 100%)' }}>
         <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+          <div className="reveal" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <p style={{ color: '#3B82F6', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>What We Stand For</p>
             <h2 style={{ fontSize: '2.25rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>Our Values</h2>
             <p style={{ color: '#94A3B8', fontSize: '1rem' }}>What we stand for, every single day.</p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
-            {values.map(v => (
-              <div key={v.title} style={{ ...cardBase, padding: '1.75rem' }} onMouseEnter={onCardEnter} onMouseLeave={onCardLeave}>
+            {values.map((v, i) => (
+              <div key={v.title} className={`reveal reveal-d${i + 1}`} style={{ ...cardBase, padding: '1.75rem' }} onMouseEnter={onCardEnter} onMouseLeave={onCardLeave}>
                 <div style={{ fontSize: '2rem', marginBottom: '0.875rem' }}>{v.icon}</div>
                 <h3 style={{ color: '#fff', fontWeight: 600, fontSize: '1.0625rem', marginBottom: '0.5rem' }}>{v.title}</h3>
                 <p style={{ color: '#94A3B8', fontSize: '0.875rem', lineHeight: 1.6 }}>{v.desc}</p>
@@ -134,14 +144,14 @@ export default function AboutPage() {
       {/* Meet the Team */}
       <section style={{ padding: '5rem 1.5rem' }}>
         <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+          <div className="reveal" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <p style={{ color: '#3B82F6', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>The People</p>
             <h2 style={{ fontSize: '2.25rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>Meet the Team</h2>
             <p style={{ color: '#94A3B8' }}>The people behind every spotless vehicle.</p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
-            {team.map(member => (
-              <div key={member.name} style={{ ...cardBase, padding: '1.75rem', textAlign: 'center' }} onMouseEnter={onCardEnter} onMouseLeave={onCardLeave}>
+            {team.map((member, i) => (
+              <div key={member.name} className={`reveal reveal-d${i + 1}`} style={{ ...cardBase, padding: '1.75rem', textAlign: 'center' }} onMouseEnter={onCardEnter} onMouseLeave={onCardLeave}>
                 {/* Avatar with exp badge */}
                 <div style={{ position: 'relative', width: '5rem', margin: '0 auto 1.125rem' }}>
                   <div style={{ width: '5rem', height: '5rem', borderRadius: '9999px', background: 'rgba(59,130,246,0.12)', border: '2px solid rgba(59,130,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3B82F6', fontWeight: 700, fontSize: '1.5rem' }}>
@@ -169,8 +179,8 @@ export default function AboutPage() {
       {/* Stats */}
       <section style={{ padding: '4rem 1.5rem', background: 'linear-gradient(180deg, #060e1a 0%, #0A1628 100%)' }}>
         <div style={{ maxWidth: '56rem', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1.25rem', textAlign: 'center' }}>
-          {stats.map(s => (
-            <div key={s.label} style={{ ...cardBase, padding: '1.75rem' }}>
+          {stats.map((s, i) => (
+            <div key={s.label} className={`reveal reveal-d${i + 1}`} style={{ ...cardBase, padding: '1.75rem' }}>
               <p style={{ fontSize: '2.5rem', fontWeight: 800, color: '#3B82F6', letterSpacing: '-0.02em', marginBottom: '0.375rem' }}>{s.value}</p>
               <p style={{ color: '#94A3B8', fontSize: '0.875rem' }}>{s.label}</p>
             </div>
@@ -179,7 +189,7 @@ export default function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
+      <section className="reveal" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
         <h2 style={{ fontSize: '1.875rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', marginBottom: '1rem' }}>
           Ready to experience the LuxeWash difference?
         </h2>
