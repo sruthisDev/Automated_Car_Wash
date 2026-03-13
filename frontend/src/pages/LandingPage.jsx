@@ -156,7 +156,7 @@ export default function LandingPage() {
           </div>
 
           <div className="reveal reveal-d3" style={{ display: 'flex', gap: '4rem', marginTop: '5rem', paddingTop: '2.5rem', borderTop: `1px solid ${BDR}`, flexWrap: 'wrap' }}>
-            {[{ v: '5,000+', l: 'Happy Members' }, { v: '8+', l: 'Years in Business' }, { v: '99%', l: 'Satisfaction Rate' }].map(s => (
+            {[{ v: '5,000+', l: 'Happy Members' }, { v: '8+', l: 'Years in Business' }, { v: '99.99%', l: 'Satisfaction Rate' }].map(s => (
               <div key={s.l}>
                 <p style={{ fontSize: '2.5rem', fontWeight: 700, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: '0.375rem' }}>{s.v}</p>
                 <p style={{ color: MUTED, fontSize: '0.8125rem', fontWeight: 500 }}>{s.l}</p>
