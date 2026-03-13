@@ -48,7 +48,7 @@ def _footer_html():
       <tr>
         <td align="center" style="padding:20px 32px;background:#0A1628;border-top:1px solid rgba(255,255,255,0.1);">
           <p style="color:#94A3B8;font-size:12px;margin:0 0 5px;font-family:system-ui,sans-serif;">
-            123 Shine Ave, Suite 100, City, State 00000
+            123 CleanRide Street, Tracy, CA - 00000
           </p>
           <p style="color:#94A3B8;font-size:12px;margin:0 0 10px;font-family:system-ui,sans-serif;">
             +1 (555) 123-4567 &nbsp;&middot;&nbsp; hello@luxewash.com

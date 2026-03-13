@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import axios from 'axios'
 
 const G    = '#C8A96E'
-const G2   = '#b89256'
 const BG   = '#f0efec'
 const CARD = '#ffffff'
 const BDR  = 'rgba(0,0,0,0.09)'
@@ -29,14 +28,13 @@ export default function ChatBot() {
     }
   }, [open, messages])
 
-  async function send() {
-    const text = input.trim()
+  async function sendText(text) {
     if (!text || loading) return
-    setInput('')
     setMessages(prev => [...prev, { from: 'user', text }])
     setLoading(true)
     try {
-      const { data } = await axios.post('/api/chatbot/chat', { message: text })
+      const token = localStorage.getItem('lw_token') || null
+      const { data } = await axios.post('/api/chatbot/chat', { message: text, token })
       setMessages(prev => [...prev, { from: 'bot', text: data.reply }])
       if (!open) setUnread(n => n + 1)
     } catch {
@@ -44,6 +42,13 @@ export default function ChatBot() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function send() {
+    const text = input.trim()
+    if (!text || loading) return
+    setInput('')
+    await sendText(text)
   }
 
   function onKey(e) {
@@ -142,8 +147,8 @@ export default function ChatBot() {
             borderTop: `1px solid ${BDR}`,
             display: 'flex', gap: '0.4rem', flexWrap: 'wrap',
           }}>
-            {['Services', 'Memberships', 'Book Now', 'Hours'].map(q => (
-              <button key={q} onClick={() => { setInput(q); }}
+            {['Services', 'Memberships', 'My Membership', 'My Appointment', 'Hours'].map(q => (
+              <button key={q} onClick={() => sendText(q)}
                 style={{
                   background: 'transparent', border: `1px solid ${BDR}`,
                   borderRadius: '2rem', padding: '0.25rem 0.625rem',

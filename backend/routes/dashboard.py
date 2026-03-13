@@ -1,11 +1,37 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from database import get_db
 from models.models import User, Booking
 from routes.auth import get_current_user
 
 router = APIRouter()
+
+PACIFIC = ZoneInfo("America/Los_Angeles")
+
+
+def auto_complete_past_bookings(user_id: int, db: Session):
+    """Mark upcoming bookings as completed once their appointment time has passed (Pacific time)."""
+    now = datetime.now(PACIFIC)
+    upcoming = db.query(Booking).filter(
+        Booking.user_id == user_id,
+        Booking.status == "upcoming"
+    ).all()
+    changed = False
+    for b in upcoming:
+        try:
+            appt_dt = datetime.strptime(
+                f"{b.appointment_date} {b.appointment_time}", "%Y-%m-%d %I:%M %p"
+            ).replace(tzinfo=PACIFIC)
+            if appt_dt < now:
+                b.status = "completed"
+                changed = True
+        except (ValueError, Exception):
+            pass
+    if changed:
+        db.commit()
 
 
 class UpdateNameRequest(BaseModel):
@@ -73,6 +99,7 @@ def change_password(payload: ChangePasswordRequest, token: str, db: Session = De
 @router.get("/appointments")
 def get_appointments(token: str, db: Session = Depends(get_db)):
     user = get_current_user(token, db)
+    auto_complete_past_bookings(user.id, db)
     bookings = (
         db.query(Booking)
         .filter(Booking.user_id == user.id)

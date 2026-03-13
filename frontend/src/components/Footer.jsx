@@ -77,7 +77,7 @@ export default function Footer() {
             <h4 style={{ color: '#f0efec', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '1rem' }}>Contact</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {[
-                { icon: '📍', text: '123 Shine Ave, Suite 100\nCity, State 00000', multi: true },
+                { icon: '📍', text: '123 CleanRide Street\nTracy, CA - 00000', multi: true },
                 { icon: '📞', text: '+1 (555) 123-4567' },
                 { icon: '📧', text: 'hello@luxewash.com' },
                 { icon: '🕐', text: 'Mon–Sat: 8am–7pm | Sun: 9am–5pm' },

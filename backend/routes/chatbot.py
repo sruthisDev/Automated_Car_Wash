@@ -1,18 +1,164 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from typing import Optional
+from sqlalchemy.orm import Session
+from jose import JWTError, jwt
+from database import get_db
+from models.models import User, Membership, Booking
+from routes.dashboard import auto_complete_past_bookings
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 router = APIRouter()
+
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret")
+ALGORITHM  = os.getenv("ALGORITHM", "HS256")
+
+PLAN_LABELS = {
+    "standard":     "Standard",
+    "premium":      "Premium",
+    "premium_plus": "Premium Plus",
+}
 
 
 class ChatRequest(BaseModel):
     message: str
+    token: Optional[str] = None
 
 
-def get_response(msg: str) -> str:
+def get_user_context(token: str, db: Session) -> Optional[dict]:
+    """Decode token and return a dict with user's membership + upcoming bookings."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+        user = db.query(User).filter(User.id == int(user_id)).first()
+        if not user:
+            return None
+
+        ctx = {"name": user.full_name.split()[0]}
+
+        # Membership
+        m = db.query(Membership).filter(Membership.user_id == user.id).first()
+        if m:
+            ctx["membership"] = {
+                "plan":      PLAN_LABELS.get(m.plan, m.plan),
+                "status":    m.status,
+                "starts_at": m.starts_at.strftime("%B %d, %Y") if m.starts_at else None,
+                "renews_at": m.renews_at.strftime("%B %d, %Y") if m.renews_at else None,
+                "ends_at":   m.ends_at.strftime("%B %d, %Y")   if m.ends_at   else None,
+                "price":     m.price,
+            }
+        else:
+            ctx["membership"] = None
+
+        # Auto-complete past bookings before querying
+        auto_complete_past_bookings(user.id, db)
+
+        # Upcoming bookings (status=upcoming, sorted by date)
+        bookings = (
+            db.query(Booking)
+            .filter(Booking.user_id == user.id, Booking.status == "upcoming")
+            .order_by(Booking.appointment_date, Booking.appointment_time)
+            .all()
+        )
+        ctx["bookings"] = [
+            {
+                "service": b.service.title(),
+                "date":    b.appointment_date,
+                "time":    b.appointment_time,
+                "ref":     b.booking_ref,
+            }
+            for b in bookings
+        ]
+
+        return ctx
+    except (JWTError, Exception):
+        return None
+
+
+def get_response(msg: str, ctx: Optional[dict] = None) -> str:
     m = msg.lower().strip()
+
+    # ── PERSONAL QUERIES (require login) ──────────────────────
+    is_personal = any(k in m for k in [
+        'my appointment', 'my booking', 'next appointment', 'upcoming appointment',
+        'my schedule', 'when is my', 'my next', 'my membership', 'my plan',
+        'membership status', 'my status', 'when does it', 'when does my',
+        'when did it start', 'when did my', 'membership start', 'membership end',
+        'expire', 'expiry', 'renew', 'renewal', 'my account',
+    ])
+
+    if is_personal:
+        if not ctx:
+            return (
+                "🔒 Please log in to view your personal information.\n\n"
+                "Once logged in, I can tell you about your upcoming appointments, "
+                "membership status, renewal dates, and more!"
+            )
+
+        name = ctx["name"]
+
+        # ── My Appointments ───────────────────────────────────
+        if any(k in m for k in ['appointment', 'booking', 'schedule', 'next', 'upcoming']):
+            bookings = ctx.get("bookings", [])
+            if not bookings:
+                return (
+                    f"📅 Hi {name}! You have no upcoming appointments right now.\n\n"
+                    "Would you like to book one? Head to our Services section to get started!"
+                )
+            lines = [f"📅 Hi {name}! Here are your upcoming appointments:\n"]
+            for i, b in enumerate(bookings[:3], 1):
+                lines.append(f"{i}. {b['service']} Wash")
+                lines.append(f"   📆 {b['date']}  🕐 {b['time']}")
+                lines.append(f"   Ref: {b['ref']}\n")
+            return "\n".join(lines).strip()
+
+        # ── My Membership ─────────────────────────────────────
+        mem = ctx.get("membership")
+        if not mem:
+            return (
+                f"Hi {name}! You don't have an active membership yet.\n\n"
+                "🏷️ Our plans start at just $29/mo. Check out the Memberships section to sign up!"
+            )
+
+        status_icon = "✅" if mem["status"] == "active" else "❌"
+        reply = f"🏷️ Hi {name}! Here's your membership info:\n\n"
+        reply += f"Plan:    {mem['plan']} — ${mem['price']:.0f}/mo\n"
+        reply += f"Status:  {status_icon} {mem['status'].title()}\n"
+        if mem["starts_at"]:
+            reply += f"Started: {mem['starts_at']}\n"
+        if mem["renews_at"] and mem["status"] == "active":
+            reply += f"Renews:  {mem['renews_at']}\n"
+        if mem["ends_at"] and mem["status"] == "cancelled":
+            reply += f"Access until: {mem['ends_at']}\n"
+        return reply.strip()
+
+    # ── IDENTITY ──────────────────────────────────────────────
+    if any(k in m for k in ['who are you', 'what are you', 'who r u', 'are you a bot', 'are you human',
+                             'are you ai', 'your name', 'introduce yourself', 'what can you do',
+                             'what do you do', 'how can you help']):
+        return (
+            "🚗 I'm the LuxeWash Assistant!\n\n"
+            "I'm here to help you with:\n"
+            "• Services & wash packages\n"
+            "• Membership plans & pricing\n"
+            "• Booking, hours & location\n"
+            "• Your personal appointments & membership (when logged in)\n\n"
+            "Just ask me anything!"
+        )
 
     # ── GREETINGS ─────────────────────────────────────────────
     if any(k in m for k in ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'howdy', 'sup']):
+        if ctx:
+            return (
+                f"👋 Hey {ctx['name']}! Welcome back to LuxeWash!\n\n"
+                "I can help you with services, memberships, appointments, or your account details. "
+                "What can I do for you today?"
+            )
         return (
             "👋 Hi there! Welcome to LuxeWash!\n\n"
             "I can help you with:\n"
@@ -29,8 +175,7 @@ def get_response(msg: str) -> str:
     if any(k in m for k in ['basic wash', 'basic']):
         return (
             "🚿 Basic Wash — $12\n\n"
-            "A thorough exterior rinse with premium soap, high-pressure wash, and air dry. "
-            "Perfect for a quick refresh.\n\n"
+            "A thorough exterior rinse with premium soap, high-pressure wash, and air dry.\n\n"
             "Includes:\n"
             "• Exterior rinse\n"
             "• Premium foam soap\n"
@@ -41,7 +186,7 @@ def get_response(msg: str) -> str:
     if any(k in m for k in ['deluxe wash', 'deluxe']):
         return (
             "✨ Deluxe Wash — $22\n\n"
-            "Everything in Basic plus interior vacuuming and streak-free window cleaning inside and out.\n\n"
+            "Everything in Basic plus interior vacuuming and streak-free window cleaning.\n\n"
             "Includes:\n"
             "• Everything in Basic\n"
             "• Interior vacuum\n"
@@ -52,7 +197,7 @@ def get_response(msg: str) -> str:
     if any(k in m for k in ['premium wash', 'full detail', 'hand wax', 'tire shine']):
         return (
             "💎 Premium Wash — $35\n\n"
-            "Our full-detail experience — hand wax, tire shine, leather conditioning, and complete interior detail.\n\n"
+            "Our full-detail experience — hand wax, tire shine, leather conditioning.\n\n"
             "Includes:\n"
             "• Everything in Deluxe\n"
             "• Hand wax & polish\n"
@@ -107,7 +252,7 @@ def get_response(msg: str) -> str:
             "Not included: Premium Wash, Priority lane"
         )
 
-    if any(k in m for k in ['membership', 'member', 'plan', 'subscribe', 'subscription', 'monthly', 'unlimited']):
+    if any(k in m for k in ['memberships', 'membership', 'member', 'plan', 'subscribe', 'subscription', 'monthly', 'unlimited']):
         return (
             "🏷️ LuxeWash Memberships\n\n"
             "⭐ Standard — $29/mo\n"
@@ -163,5 +308,6 @@ def get_response(msg: str) -> str:
 
 
 @router.post("/chat")
-def chat(req: ChatRequest):
-    return {"reply": get_response(req.message)}
+def chat(req: ChatRequest, db: Session = Depends(get_db)):
+    ctx = get_user_context(req.token, db) if req.token else None
+    return {"reply": get_response(req.message, ctx)}
