@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
+import ChatBot from './components/ChatBot'
 import LandingPage from './pages/LandingPage'
 import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
@@ -46,6 +47,7 @@ function App() {
         ))}
       </div>
       <ScrollToTop />
+      <ChatBot />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
