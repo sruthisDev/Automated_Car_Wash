@@ -1,0 +1,448 @@
+import { useState, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import axios from 'axios'
+import Navbar from '../components/Navbar'
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder')
+
+const SERVICES = [
+  { id: 'basic', label: 'Basic Wash', price: 12 },
+  { id: 'deluxe', label: 'Deluxe Wash', price: 22 },
+  { id: 'premium', label: 'Premium Wash', price: 35 },
+]
+
+// Which services each membership plan covers for free
+const MEMBERSHIP_COVERAGE = {
+  standard:     ['basic'],
+  premium:      ['basic', 'deluxe'],
+  premium_plus: ['basic', 'deluxe', 'premium'],
+}
+
+// Discount % on non-covered services
+const MEMBERSHIP_DISCOUNTS = {
+  standard:     0.10,
+  premium:      0.20,
+  premium_plus: 0.00,
+}
+
+const TIME_SLOTS = [
+  '8:00 AM', '9:00 AM', '10:00 AM', '10:30 AM',
+  '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM',
+  '3:00 PM', '3:30 PM', '4:30 PM', '5:00 PM',
+]
+
+const TAX_RATE = 0.09
+
+// ── Shared styles ──────────────────────────────────────
+const cardBase = {
+  background: 'linear-gradient(145deg, #0F2040 0%, #0d1b33 100%)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
+  borderRadius: '1rem',
+}
+
+const inputBase = {
+  width: '100%',
+  background: 'rgba(6,14,26,0.8)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: '0.75rem',
+  padding: '0.625rem 0.875rem',
+  color: '#fff',
+  fontSize: '0.875rem',
+  outline: 'none',
+  transition: 'border-color 0.2s',
+  fontFamily: "'Inter', system-ui, sans-serif",
+  boxSizing: 'border-box',
+}
+
+const onInputFocus = (e) => { e.currentTarget.style.borderColor = 'rgba(59,130,246,0.6)' }
+const onInputBlur = (e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }
+
+const btnBlue = {
+  background: 'linear-gradient(135deg, #3B82F6, #2563EB)',
+  boxShadow: '0 4px 20px rgba(59,130,246,0.35)',
+  border: 'none',
+  cursor: 'pointer',
+  transition: 'all 0.2s',
+  color: '#fff',
+  fontWeight: 600,
+  fontFamily: "'Inter', system-ui, sans-serif",
+}
+const onBtnEnter = (e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.boxShadow = '0 6px 28px rgba(59,130,246,0.55)'; e.currentTarget.style.transform = 'translateY(-1px)' } }
+const onBtnLeave = (e) => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(59,130,246,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }
+
+// ── Checkout Form ──────────────────────────────────────
+function CheckoutForm({ preselected }) {
+  const stripe = useStripe()
+  const elements = useElements()
+  const navigate = useNavigate()
+
+  const user = (() => { try { return JSON.parse(localStorage.getItem('lw_user')) } catch { return null } })()
+  const token = localStorage.getItem('lw_token')
+
+  const [service, setService] = useState(preselected || 'basic')
+  const [date, setDate] = useState('')
+  const [timeSlot, setTimeSlot] = useState('')
+  const [guestName, setGuestName] = useState('')
+  const [guestEmail, setGuestEmail] = useState('')
+  const isGuest = !user
+  const [useNewCard, setUseNewCard] = useState(!user?.card_last4)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  // Fresh membership from API — localStorage may be stale from before the plan was purchased
+  const [memberPlan, setMemberPlan] = useState(user?.membership_plan || null)
+  const [memberStatus, setMemberStatus] = useState(user?.membership_status || null)
+
+  useEffect(() => {
+    if (!token) return
+    axios.get(`/api/auth/me?token=${token}`).then(({ data }) => {
+      const plan   = data.membership?.plan   || null
+      const status = data.membership?.status || null
+      setMemberPlan(plan)
+      setMemberStatus(status)
+      // Keep localStorage in sync so future page loads are correct
+      const stored = JSON.parse(localStorage.getItem('lw_user') || '{}')
+      localStorage.setItem('lw_user', JSON.stringify({ ...stored, membership_plan: plan, membership_status: status }))
+    }).catch(() => {})
+  }, [token])
+
+  const selectedService = SERVICES.find(s => s.id === service)
+
+  // Membership coverage + discount — uses fresh API data
+  const memberActive   = !isGuest && memberStatus === 'active'
+  const coveredByMembership = memberActive && MEMBERSHIP_COVERAGE[memberPlan]?.includes(service)
+  const discountPct    = memberActive && !coveredByMembership ? (MEMBERSHIP_DISCOUNTS[memberPlan] || 0) : 0
+
+  const basePrice      = selectedService?.price || 0
+  const price          = coveredByMembership ? 0 : +(basePrice * (1 - discountPct)).toFixed(2)
+  const tax            = coveredByMembership ? 0 : +(price * TAX_RATE).toFixed(2)
+  const total          = coveredByMembership ? 0 : +(price + tax).toFixed(2)
+  const today = new Date().toISOString().split('T')[0]
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    if (!date || !timeSlot) { setError('Please select a date and time slot'); return }
+    if (isGuest && (!guestName || !guestEmail)) { setError('Please enter your name and email'); return }
+    setLoading(true)
+    try {
+      let paymentMethodId = null
+
+      if (!coveredByMembership) {
+        if (useNewCard || !user?.card_last4) {
+          // New card — tokenise via Stripe.js
+          if (!stripe || !elements) { setError('Stripe not loaded'); setLoading(false); return }
+          const cardElement = elements.getElement(CardElement)
+          const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
+            type: 'card',
+            card: cardElement,
+            billing_details: { name: user?.full_name || guestName, email: user?.email || guestEmail },
+          })
+          if (stripeError) { setError(stripeError.message); setLoading(false); return }
+          paymentMethodId = paymentMethod.id
+        }
+        // else: paymentMethodId stays null → backend uses saved card on file
+      }
+      const params = token ? `?token=${token}` : ''
+      const { data } = await axios.post(`/api/payments/service${params}`, {
+        service,
+        appointment_date: date,
+        appointment_time: timeSlot,
+        guest_name: isGuest ? guestName : null,
+        guest_email: isGuest ? guestEmail : null,
+        payment_method_id: paymentMethodId,
+      })
+      navigate('/payment/success', { state: { result: data } })
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Payment failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const sectionTitle = (title) => (
+    <h3 style={{ color: '#fff', fontWeight: 600, fontSize: '1rem', marginBottom: '1rem' }}>{title}</h3>
+  )
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <div style={{ flex: 1, minWidth: '280px', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+        {/* Customer Info */}
+        <div style={{ ...cardBase, padding: '1.5rem' }}>
+          {sectionTitle('Customer Info')}
+          {user ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+              {[{ label: 'Name', value: user.full_name }, { label: 'Email', value: user.email }].map(f => (
+                <div key={f.label}>
+                  <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.75rem', marginBottom: '0.375rem' }}>{f.label}</label>
+                  <input value={f.value} readOnly style={{ ...inputBase, border: '1px solid rgba(255,255,255,0.05)', color: '#94A3B8', cursor: 'default' }} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.75rem', marginBottom: '0.375rem' }}>Full Name</label>
+                <input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="John Doe" style={inputBase} onFocus={onInputFocus} onBlur={onInputBlur} />
+              </div>
+              <div>
+                <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.75rem', marginBottom: '0.375rem' }}>Email Address</label>
+                <input type="email" value={guestEmail} onChange={e => setGuestEmail(e.target.value)} placeholder="john@email.com" style={inputBase} onFocus={onInputFocus} onBlur={onInputBlur} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Service */}
+        <div style={{ ...cardBase, padding: '1.5rem' }}>
+          {sectionTitle('Select Service')}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
+            {SERVICES.map(s => {
+              const isCovered  = memberActive && MEMBERSHIP_COVERAGE[memberPlan]?.includes(s.id)
+              const sDiscount  = memberActive && !isCovered ? (MEMBERSHIP_DISCOUNTS[memberPlan] || 0) : 0
+              const isSelected = service === s.id
+              const discountedPrice = isCovered ? 0 : +(s.price * (1 - sDiscount)).toFixed(2)
+              return (
+                <button key={s.id} type="button" onClick={() => setService(s.id)}
+                  style={{
+                    padding: '1rem',
+                    borderRadius: '0.75rem',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: "'Inter', system-ui, sans-serif",
+                    position: 'relative',
+                    ...(isSelected
+                      ? { background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.4)' }
+                      : { background: 'rgba(6,14,26,0.5)', border: '1px solid rgba(255,255,255,0.08)' }
+                    ),
+                  }}>
+                  {isCovered && (
+                    <span style={{ display: 'inline-block', marginBottom: '0.375rem', fontSize: '0.6875rem', fontWeight: 600, color: '#4ade80', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.25)', borderRadius: '9999px', padding: '0.1rem 0.5rem' }}>
+                      ✓ Covered
+                    </span>
+                  )}
+                  {!isCovered && sDiscount > 0 && (
+                    <span style={{ display: 'inline-block', marginBottom: '0.375rem', fontSize: '0.6875rem', fontWeight: 600, color: '#facc15', background: 'rgba(250,204,21,0.1)', border: '1px solid rgba(250,204,21,0.25)', borderRadius: '9999px', padding: '0.1rem 0.5rem' }}>
+                      {Math.round(sDiscount * 100)}% member discount
+                    </span>
+                  )}
+                  <p style={{ fontWeight: 500, fontSize: '0.875rem', color: isSelected ? '#fff' : '#94A3B8', marginBottom: '0.25rem' }}>{s.label}</p>
+                  {isCovered ? (
+                    <p style={{ fontWeight: 700, fontSize: '1.125rem', color: '#4ade80' }}>Free</p>
+                  ) : sDiscount > 0 ? (
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.375rem' }}>
+                      <p style={{ fontWeight: 700, fontSize: '1.125rem', color: isSelected ? '#60a5fa' : '#fff' }}>${discountedPrice}</p>
+                      <p style={{ fontSize: '0.75rem', color: '#64748B', textDecoration: 'line-through' }}>${s.price}</p>
+                    </div>
+                  ) : (
+                    <p style={{ fontWeight: 700, fontSize: '1.125rem', color: isSelected ? '#60a5fa' : '#fff' }}>${s.price}</p>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Date */}
+        <div style={{ ...cardBase, padding: '1.5rem' }}>
+          {sectionTitle('Select Date')}
+          <input type="date" value={date} min={today} onChange={e => setDate(e.target.value)}
+            style={{ ...inputBase, colorScheme: 'dark' }}
+            onFocus={onInputFocus} onBlur={onInputBlur} />
+        </div>
+
+        {/* Time Slots */}
+        <div style={{ ...cardBase, padding: '1.5rem' }}>
+          {sectionTitle('Select Time Slot')}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+            {TIME_SLOTS.map(t => (
+              <button key={t} type="button" onClick={() => setTimeSlot(t)}
+                style={{
+                  padding: '0.5rem 0.25rem',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.8125rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  transition: 'all 0.2s',
+                  ...(timeSlot === t
+                    ? { background: 'linear-gradient(135deg, #3B82F6, #2563EB)', color: '#fff', border: 'none', boxShadow: '0 2px 10px rgba(59,130,246,0.35)' }
+                    : { background: 'rgba(6,14,26,0.6)', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.08)' }
+                  ),
+                }}>
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Payment — hidden when covered by membership */}
+        {coveredByMembership && (
+          <div style={{ padding: '1rem 1.25rem', background: 'rgba(74,222,128,0.07)', border: '1px solid rgba(74,222,128,0.25)', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+            <span style={{ fontSize: '1.125rem' }}>✅</span>
+            <p style={{ color: '#4ade80', fontSize: '0.875rem', fontWeight: 500 }}>
+              This service is covered by your membership — no payment needed.
+            </p>
+          </div>
+        )}
+
+        {!coveredByMembership && <div style={{ ...cardBase, padding: '1.5rem' }}>
+          {sectionTitle('Payment')}
+          {user?.card_last4 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+              {[
+                { id: 'saved', checked: !useNewCard, onChange: () => setUseNewCard(false), label: `${user.card_brand?.toUpperCase()} •••• ${user.card_last4}`, sub: `Expires ${user.card_expiry}` },
+                { id: 'new', checked: useNewCard, onChange: () => setUseNewCard(true), label: 'Use a different card' },
+              ].map(opt => (
+                <label key={opt.id}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.875rem 1rem',
+                    borderRadius: '0.75rem', cursor: 'pointer', transition: 'all 0.2s',
+                    ...(opt.checked ? { border: '1px solid rgba(59,130,246,0.4)', background: 'rgba(59,130,246,0.08)' } : { border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(6,14,26,0.4)' }),
+                  }}>
+                  <input type="radio" checked={opt.checked} onChange={opt.onChange} style={{ accentColor: '#3B82F6' }} />
+                  <span>
+                    <span style={{ color: '#fff', fontSize: '0.875rem' }}>{opt.label}</span>
+                    {opt.sub && <span style={{ color: '#94A3B8', fontSize: '0.8125rem', marginLeft: '0.5rem' }}>{opt.sub}</span>}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+          {(useNewCard || !user?.card_last4) && (
+            <div style={{ padding: '1rem', background: 'rgba(6,14,26,0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.75rem' }}>
+              <CardElement options={{ style: { base: { color: '#fff', fontSize: '14px', fontFamily: "'Inter', system-ui, sans-serif", '::placeholder': { color: '#4B5563' }, iconColor: '#3B82F6' }, invalid: { color: '#F87171' } } }} />
+            </div>
+          )}
+        </div>}
+
+        {error && (
+          <div style={{ padding: '1rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '0.75rem', color: '#f87171', fontSize: '0.875rem' }}>
+            {error}
+          </div>
+        )}
+
+        <button type="submit" disabled={loading || !stripe}
+          style={{ ...btnBlue, width: '100%', padding: '1rem', borderRadius: '0.875rem', fontSize: '1rem', opacity: (loading || !stripe) ? 0.6 : 1 }}
+          onMouseEnter={onBtnEnter} onMouseLeave={onBtnLeave}>
+          {loading ? 'Processing...' : coveredByMembership ? 'Book for Free' : `Confirm & Pay $${total.toFixed(2)}`}
+        </button>
+      </div>
+
+      {/* Order Summary */}
+      <div style={{ width: '17rem', flexShrink: 0 }}>
+        <div style={{ ...cardBase, padding: '1.5rem', position: 'sticky', top: '6rem' }}>
+          <h3 style={{ color: '#fff', fontWeight: 600, fontSize: '1rem', marginBottom: '1.25rem' }}>Order Summary</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+              <span style={{ color: '#94A3B8' }}>Service</span>
+              <span style={{ color: '#fff' }}>{selectedService?.label}</span>
+            </div>
+            {date && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                <span style={{ color: '#94A3B8' }}>Date</span>
+                <span style={{ color: '#fff' }}>{new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+              </div>
+            )}
+            {timeSlot && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                <span style={{ color: '#94A3B8' }}>Time</span>
+                <span style={{ color: '#fff' }}>{timeSlot}</span>
+              </div>
+            )}
+          </div>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+              <span style={{ color: '#94A3B8' }}>Subtotal</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                {discountPct > 0 && (
+                  <span style={{ color: '#64748B', fontSize: '0.75rem', textDecoration: 'line-through' }}>${basePrice.toFixed(2)}</span>
+                )}
+                <span style={{ color: '#fff' }}>{coveredByMembership ? 'Free' : `$${price.toFixed(2)}`}</span>
+              </div>
+            </div>
+            {discountPct > 0 && !coveredByMembership && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                <span style={{ color: '#facc15' }}>Member discount ({Math.round(discountPct * 100)}%)</span>
+                <span style={{ color: '#facc15' }}>-${(basePrice * discountPct).toFixed(2)}</span>
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+              <span style={{ color: '#94A3B8' }}>Tax (9%)</span>
+              <span style={{ color: '#fff' }}>${tax.toFixed(2)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, paddingTop: '0.625rem', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+              <span style={{ color: '#fff' }}>Total</span>
+              <span style={{ color: coveredByMembership ? '#4ade80' : '#60a5fa', fontSize: '1.125rem' }}>
+                {coveredByMembership ? 'Free' : `$${total.toFixed(2)}`}
+              </span>
+            </div>
+            {coveredByMembership && (
+              <p style={{ color: '#4ade80', fontSize: '0.75rem', marginTop: '0.375rem' }}>✓ Covered by your membership</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </form>
+  )
+}
+
+// ── Page ───────────────────────────────────────────────
+export default function ServiceCheckoutPage() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const preselected = location.state?.preselected || 'basic'
+  const [proceedAs, setProceedAs] = useState(null)
+  const user = (() => { try { return JSON.parse(localStorage.getItem('lw_user')) } catch { return null } })()
+
+  useEffect(() => { if (user) setProceedAs('user') }, [])
+
+  const cardBase = {
+    background: 'linear-gradient(145deg, #0F2040 0%, #0d1b33 100%)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+    borderRadius: '1.25rem',
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0A1628', fontFamily: "'Inter', system-ui, sans-serif" }}>
+      <Navbar />
+      <div style={{ maxWidth: '64rem', margin: '0 auto', padding: '7rem 1.5rem 4rem' }}>
+        <h1 style={{ fontSize: '1.875rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', marginBottom: '2rem' }}>Book Your Service</h1>
+
+        {!user && !proceedAs && (
+          <div style={{ maxWidth: '26rem', margin: '0 auto' }}>
+            <div style={{ ...cardBase, padding: '2.5rem', textAlign: 'center' }}>
+              <div style={{ width: '3.5rem', height: '3.5rem', borderRadius: '9999px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.5rem' }}>
+                🚗
+              </div>
+              <h2 style={{ color: '#fff', fontWeight: 700, fontSize: '1.25rem', marginBottom: '0.5rem' }}>How would you like to proceed?</h2>
+              <p style={{ color: '#94A3B8', fontSize: '0.875rem', marginBottom: '1.75rem' }}>Sign in to save booking history and use saved payment details.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <button onClick={() => navigate('/login', { state: { redirectTo: '/checkout/service' } })}
+                  style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)', boxShadow: '0 4px 20px rgba(59,130,246,0.35)', border: 'none', cursor: 'pointer', padding: '0.875rem', borderRadius: '0.75rem', fontSize: '0.9375rem', fontWeight: 600, color: '#fff', fontFamily: "'Inter', system-ui, sans-serif" }}>
+                  Login / Sign Up
+                </button>
+                <button onClick={() => setProceedAs('guest')}
+                  style={{ padding: '0.875rem', borderRadius: '0.75rem', fontSize: '0.9375rem', fontWeight: 600, color: '#fff', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", transition: 'all 0.2s' }}>
+                  Continue as Guest
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {(user || proceedAs === 'guest') && (
+          <Elements stripe={stripePromise}>
+            <CheckoutForm preselected={preselected} />
+          </Elements>
+        )}
+      </div>
+    </div>
+  )
+}
