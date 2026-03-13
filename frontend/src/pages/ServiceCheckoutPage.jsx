@@ -13,14 +13,12 @@ const SERVICES = [
   { id: 'premium', label: 'Premium Wash', price: 35 },
 ]
 
-// Which services each membership plan covers for free
 const MEMBERSHIP_COVERAGE = {
   standard:     ['basic'],
   premium:      ['basic', 'deluxe'],
   premium_plus: ['basic', 'deluxe', 'premium'],
 }
 
-// Discount % on non-covered services
 const MEMBERSHIP_DISCOUNTS = {
   standard:     0.10,
   premium:      0.20,
@@ -35,43 +33,26 @@ const TIME_SLOTS = [
 
 const TAX_RATE = 0.09
 
-// ── Shared styles ──────────────────────────────────────
-const cardBase = {
-  background: 'linear-gradient(145deg, #0F2040 0%, #0d1b33 100%)',
-  border: '1px solid rgba(255,255,255,0.08)',
-  boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
-  borderRadius: '1rem',
-}
+const BG    = '#f0efec'
+const CARD  = '#ffffff'
+const BDR   = 'rgba(0,0,0,0.09)'
+const TEXT  = '#111111'
+const MUTED = '#666666'
+const G     = '#C8A96E'
+
+const cardBase = { background: CARD, border: `1px solid ${BDR}`, borderRadius: '0.875rem' }
 
 const inputBase = {
-  width: '100%',
-  background: 'rgba(6,14,26,0.8)',
-  border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: '0.75rem',
-  padding: '0.625rem 0.875rem',
-  color: '#fff',
-  fontSize: '0.875rem',
-  outline: 'none',
-  transition: 'border-color 0.2s',
-  fontFamily: "'Inter', system-ui, sans-serif",
-  boxSizing: 'border-box',
+  width: '100%', background: BG, border: `1px solid ${BDR}`, borderRadius: '0.5rem',
+  padding: '0.625rem 0.875rem', color: TEXT, fontSize: '0.875rem', outline: 'none',
+  transition: 'border-color 0.2s', fontFamily: "'Inter', system-ui, sans-serif", boxSizing: 'border-box',
 }
+const onInputFocus = (e) => { e.currentTarget.style.borderColor = 'rgba(200,169,110,0.6)' }
+const onInputBlur  = (e) => { e.currentTarget.style.borderColor = BDR }
 
-const onInputFocus = (e) => { e.currentTarget.style.borderColor = 'rgba(59,130,246,0.6)' }
-const onInputBlur = (e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }
-
-const btnBlue = {
-  background: 'linear-gradient(135deg, #3B82F6, #2563EB)',
-  boxShadow: '0 4px 20px rgba(59,130,246,0.35)',
-  border: 'none',
-  cursor: 'pointer',
-  transition: 'all 0.2s',
-  color: '#fff',
-  fontWeight: 600,
-  fontFamily: "'Inter', system-ui, sans-serif",
-}
-const onBtnEnter = (e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.boxShadow = '0 6px 28px rgba(59,130,246,0.55)'; e.currentTarget.style.transform = 'translateY(-1px)' } }
-const onBtnLeave = (e) => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(59,130,246,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }
+const btnDark = { background: '#111111', border: 'none', cursor: 'pointer', transition: 'all 0.2s', color: '#f0efec', fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif" }
+const onBtnEnter = (e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.background = '#333'; e.currentTarget.style.transform = 'translateY(-1px)' } }
+const onBtnLeave = (e) => { e.currentTarget.style.background = '#111111'; e.currentTarget.style.transform = 'translateY(0)' }
 
 // ── Checkout Form ──────────────────────────────────────
 function CheckoutForm({ preselected }) {
@@ -92,7 +73,6 @@ function CheckoutForm({ preselected }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Fresh membership from API — localStorage may be stale from before the plan was purchased
   const [memberPlan, setMemberPlan] = useState(user?.membership_plan || null)
   const [memberStatus, setMemberStatus] = useState(user?.membership_status || null)
 
@@ -103,7 +83,6 @@ function CheckoutForm({ preselected }) {
       const status = data.membership?.status || null
       setMemberPlan(plan)
       setMemberStatus(status)
-      // Keep localStorage in sync so future page loads are correct
       const stored = JSON.parse(localStorage.getItem('lw_user') || '{}')
       localStorage.setItem('lw_user', JSON.stringify({ ...stored, membership_plan: plan, membership_status: status }))
     }).catch(() => {})
@@ -111,16 +90,15 @@ function CheckoutForm({ preselected }) {
 
   const selectedService = SERVICES.find(s => s.id === service)
 
-  // Membership coverage + discount — uses fresh API data
-  const memberActive   = !isGuest && memberStatus === 'active'
+  const memberActive        = !isGuest && memberStatus === 'active'
   const coveredByMembership = memberActive && MEMBERSHIP_COVERAGE[memberPlan]?.includes(service)
-  const discountPct    = memberActive && !coveredByMembership ? (MEMBERSHIP_DISCOUNTS[memberPlan] || 0) : 0
+  const discountPct         = memberActive && !coveredByMembership ? (MEMBERSHIP_DISCOUNTS[memberPlan] || 0) : 0
 
-  const basePrice      = selectedService?.price || 0
-  const price          = coveredByMembership ? 0 : +(basePrice * (1 - discountPct)).toFixed(2)
-  const tax            = coveredByMembership ? 0 : +(price * TAX_RATE).toFixed(2)
-  const total          = coveredByMembership ? 0 : +(price + tax).toFixed(2)
-  const today = new Date().toISOString().split('T')[0]
+  const basePrice = selectedService?.price || 0
+  const price     = coveredByMembership ? 0 : +(basePrice * (1 - discountPct)).toFixed(2)
+  const tax       = coveredByMembership ? 0 : +(price * TAX_RATE).toFixed(2)
+  const total     = coveredByMembership ? 0 : +(price + tax).toFixed(2)
+  const today     = new Date().toISOString().split('T')[0]
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -130,27 +108,21 @@ function CheckoutForm({ preselected }) {
     setLoading(true)
     try {
       let paymentMethodId = null
-
       if (!coveredByMembership) {
         if (useNewCard || !user?.card_last4) {
-          // New card — tokenise via Stripe.js
           if (!stripe || !elements) { setError('Stripe not loaded'); setLoading(false); return }
           const cardElement = elements.getElement(CardElement)
           const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
-            type: 'card',
-            card: cardElement,
+            type: 'card', card: cardElement,
             billing_details: { name: user?.full_name || guestName, email: user?.email || guestEmail },
           })
           if (stripeError) { setError(stripeError.message); setLoading(false); return }
           paymentMethodId = paymentMethod.id
         }
-        // else: paymentMethodId stays null → backend uses saved card on file
       }
       const params = token ? `?token=${token}` : ''
       const { data } = await axios.post(`/api/payments/service${params}`, {
-        service,
-        appointment_date: date,
-        appointment_time: timeSlot,
+        service, appointment_date: date, appointment_time: timeSlot,
         guest_name: isGuest ? guestName : null,
         guest_email: isGuest ? guestEmail : null,
         payment_method_id: paymentMethodId,
@@ -164,7 +136,7 @@ function CheckoutForm({ preselected }) {
   }
 
   const sectionTitle = (title) => (
-    <h3 style={{ color: '#fff', fontWeight: 600, fontSize: '1rem', marginBottom: '1rem' }}>{title}</h3>
+    <h3 style={{ color: TEXT, fontWeight: 600, fontSize: '1rem', marginBottom: '1rem' }}>{title}</h3>
   )
 
   return (
@@ -178,19 +150,19 @@ function CheckoutForm({ preselected }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
               {[{ label: 'Name', value: user.full_name }, { label: 'Email', value: user.email }].map(f => (
                 <div key={f.label}>
-                  <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.75rem', marginBottom: '0.375rem' }}>{f.label}</label>
-                  <input value={f.value} readOnly style={{ ...inputBase, border: '1px solid rgba(255,255,255,0.05)', color: '#94A3B8', cursor: 'default' }} />
+                  <label style={{ display: 'block', color: MUTED, fontSize: '0.75rem', marginBottom: '0.375rem' }}>{f.label}</label>
+                  <input value={f.value} readOnly style={{ ...inputBase, border: `1px solid rgba(0,0,0,0.05)`, color: MUTED, cursor: 'default' }} />
                 </div>
               ))}
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.75rem', marginBottom: '0.375rem' }}>Full Name</label>
+                <label style={{ display: 'block', color: MUTED, fontSize: '0.75rem', marginBottom: '0.375rem' }}>Full Name</label>
                 <input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="John Doe" style={inputBase} onFocus={onInputFocus} onBlur={onInputBlur} />
               </div>
               <div>
-                <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.75rem', marginBottom: '0.375rem' }}>Email Address</label>
+                <label style={{ display: 'block', color: MUTED, fontSize: '0.75rem', marginBottom: '0.375rem' }}>Email Address</label>
                 <input type="email" value={guestEmail} onChange={e => setGuestEmail(e.target.value)} placeholder="john@email.com" style={inputBase} onFocus={onInputFocus} onBlur={onInputBlur} />
               </div>
             </div>
@@ -209,38 +181,33 @@ function CheckoutForm({ preselected }) {
               return (
                 <button key={s.id} type="button" onClick={() => setService(s.id)}
                   style={{
-                    padding: '1rem',
-                    borderRadius: '0.75rem',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    fontFamily: "'Inter', system-ui, sans-serif",
-                    position: 'relative',
+                    padding: '1rem', borderRadius: '0.5rem', textAlign: 'left', cursor: 'pointer',
+                    transition: 'all 0.2s', fontFamily: "'Inter', system-ui, sans-serif", position: 'relative',
                     ...(isSelected
-                      ? { background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.4)' }
-                      : { background: 'rgba(6,14,26,0.5)', border: '1px solid rgba(255,255,255,0.08)' }
+                      ? { background: 'rgba(200,169,110,0.07)', border: `1px solid rgba(200,169,110,0.5)` }
+                      : { background: BG, border: `1px solid ${BDR}` }
                     ),
                   }}>
                   {isCovered && (
-                    <span style={{ display: 'inline-block', marginBottom: '0.375rem', fontSize: '0.6875rem', fontWeight: 600, color: '#4ade80', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.25)', borderRadius: '9999px', padding: '0.1rem 0.5rem' }}>
+                    <span style={{ display: 'inline-block', marginBottom: '0.375rem', fontSize: '0.6875rem', fontWeight: 600, color: '#16a34a', background: 'rgba(22,163,74,0.07)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: '9999px', padding: '0.1rem 0.5rem' }}>
                       ✓ Covered
                     </span>
                   )}
                   {!isCovered && sDiscount > 0 && (
-                    <span style={{ display: 'inline-block', marginBottom: '0.375rem', fontSize: '0.6875rem', fontWeight: 600, color: '#facc15', background: 'rgba(250,204,21,0.1)', border: '1px solid rgba(250,204,21,0.25)', borderRadius: '9999px', padding: '0.1rem 0.5rem' }}>
-                      {Math.round(sDiscount * 100)}% member discount
+                    <span style={{ display: 'inline-block', marginBottom: '0.375rem', fontSize: '0.6875rem', fontWeight: 600, color: '#b45309', background: 'rgba(180,83,9,0.07)', border: '1px solid rgba(180,83,9,0.2)', borderRadius: '9999px', padding: '0.1rem 0.5rem' }}>
+                      {Math.round(sDiscount * 100)}% discount
                     </span>
                   )}
-                  <p style={{ fontWeight: 500, fontSize: '0.875rem', color: isSelected ? '#fff' : '#94A3B8', marginBottom: '0.25rem' }}>{s.label}</p>
+                  <p style={{ fontWeight: 500, fontSize: '0.875rem', color: isSelected ? TEXT : MUTED, marginBottom: '0.25rem' }}>{s.label}</p>
                   {isCovered ? (
-                    <p style={{ fontWeight: 700, fontSize: '1.125rem', color: '#4ade80' }}>Free</p>
+                    <p style={{ fontWeight: 700, fontSize: '1.125rem', color: '#16a34a' }}>Free</p>
                   ) : sDiscount > 0 ? (
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.375rem' }}>
-                      <p style={{ fontWeight: 700, fontSize: '1.125rem', color: isSelected ? '#60a5fa' : '#fff' }}>${discountedPrice}</p>
-                      <p style={{ fontSize: '0.75rem', color: '#64748B', textDecoration: 'line-through' }}>${s.price}</p>
+                      <p style={{ fontWeight: 700, fontSize: '1.125rem', color: isSelected ? G : TEXT }}>${discountedPrice}</p>
+                      <p style={{ fontSize: '0.75rem', color: '#aaa', textDecoration: 'line-through' }}>${s.price}</p>
                     </div>
                   ) : (
-                    <p style={{ fontWeight: 700, fontSize: '1.125rem', color: isSelected ? '#60a5fa' : '#fff' }}>${s.price}</p>
+                    <p style={{ fontWeight: 700, fontSize: '1.125rem', color: isSelected ? G : TEXT }}>${s.price}</p>
                   )}
                 </button>
               )
@@ -252,7 +219,7 @@ function CheckoutForm({ preselected }) {
         <div style={{ ...cardBase, padding: '1.5rem' }}>
           {sectionTitle('Select Date')}
           <input type="date" value={date} min={today} onChange={e => setDate(e.target.value)}
-            style={{ ...inputBase, colorScheme: 'dark' }}
+            style={{ ...inputBase, colorScheme: 'light' }}
             onFocus={onInputFocus} onBlur={onInputBlur} />
         </div>
 
@@ -263,16 +230,11 @@ function CheckoutForm({ preselected }) {
             {TIME_SLOTS.map(t => (
               <button key={t} type="button" onClick={() => setTimeSlot(t)}
                 style={{
-                  padding: '0.5rem 0.25rem',
-                  borderRadius: '0.5rem',
-                  fontSize: '0.8125rem',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', system-ui, sans-serif",
-                  transition: 'all 0.2s',
+                  padding: '0.5rem 0.25rem', borderRadius: '0.375rem', fontSize: '0.8125rem',
+                  fontWeight: 500, cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", transition: 'all 0.2s',
                   ...(timeSlot === t
-                    ? { background: 'linear-gradient(135deg, #3B82F6, #2563EB)', color: '#fff', border: 'none', boxShadow: '0 2px 10px rgba(59,130,246,0.35)' }
-                    : { background: 'rgba(6,14,26,0.6)', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.08)' }
+                    ? { background: '#111111', color: '#f0efec', border: 'none' }
+                    : { background: BG, color: MUTED, border: `1px solid ${BDR}` }
                   ),
                 }}>
                 {t}
@@ -281,54 +243,60 @@ function CheckoutForm({ preselected }) {
           </div>
         </div>
 
-        {/* Payment — hidden when covered by membership */}
+        {/* Membership coverage banner */}
         {coveredByMembership && (
-          <div style={{ padding: '1rem 1.25rem', background: 'rgba(74,222,128,0.07)', border: '1px solid rgba(74,222,128,0.25)', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <div style={{ padding: '1rem 1.25rem', background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
             <span style={{ fontSize: '1.125rem' }}>✅</span>
-            <p style={{ color: '#4ade80', fontSize: '0.875rem', fontWeight: 500 }}>
+            <p style={{ color: '#16a34a', fontSize: '0.875rem', fontWeight: 500 }}>
               This service is covered by your membership — no payment needed.
             </p>
           </div>
         )}
 
-        {!coveredByMembership && <div style={{ ...cardBase, padding: '1.5rem' }}>
-          {sectionTitle('Payment')}
-          {user?.card_last4 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
-              {[
-                { id: 'saved', checked: !useNewCard, onChange: () => setUseNewCard(false), label: `${user.card_brand?.toUpperCase()} •••• ${user.card_last4}`, sub: `Expires ${user.card_expiry}` },
-                { id: 'new', checked: useNewCard, onChange: () => setUseNewCard(true), label: 'Use a different card' },
-              ].map(opt => (
-                <label key={opt.id}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.875rem 1rem',
-                    borderRadius: '0.75rem', cursor: 'pointer', transition: 'all 0.2s',
-                    ...(opt.checked ? { border: '1px solid rgba(59,130,246,0.4)', background: 'rgba(59,130,246,0.08)' } : { border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(6,14,26,0.4)' }),
-                  }}>
-                  <input type="radio" checked={opt.checked} onChange={opt.onChange} style={{ accentColor: '#3B82F6' }} />
-                  <span>
-                    <span style={{ color: '#fff', fontSize: '0.875rem' }}>{opt.label}</span>
-                    {opt.sub && <span style={{ color: '#94A3B8', fontSize: '0.8125rem', marginLeft: '0.5rem' }}>{opt.sub}</span>}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
-          {(useNewCard || !user?.card_last4) && (
-            <div style={{ padding: '1rem', background: 'rgba(6,14,26,0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.75rem' }}>
-              <CardElement options={{ style: { base: { color: '#fff', fontSize: '14px', fontFamily: "'Inter', system-ui, sans-serif", '::placeholder': { color: '#4B5563' }, iconColor: '#3B82F6' }, invalid: { color: '#F87171' } } }} />
-            </div>
-          )}
-        </div>}
+        {/* Payment */}
+        {!coveredByMembership && (
+          <div style={{ ...cardBase, padding: '1.5rem' }}>
+            {sectionTitle('Payment')}
+            {user?.card_last4 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+                {[
+                  { id: 'saved', checked: !useNewCard, onChange: () => setUseNewCard(false), label: `${user.card_brand?.toUpperCase()} •••• ${user.card_last4}`, sub: `Expires ${user.card_expiry}` },
+                  { id: 'new', checked: useNewCard, onChange: () => setUseNewCard(true), label: 'Use a different card' },
+                ].map(opt => (
+                  <label key={opt.id}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.875rem 1rem',
+                      borderRadius: '0.5rem', cursor: 'pointer', transition: 'all 0.2s',
+                      ...(opt.checked
+                        ? { border: `1px solid rgba(200,169,110,0.5)`, background: 'rgba(200,169,110,0.05)' }
+                        : { border: `1px solid ${BDR}`, background: BG }
+                      ),
+                    }}>
+                    <input type="radio" checked={opt.checked} onChange={opt.onChange} style={{ accentColor: G }} />
+                    <span>
+                      <span style={{ color: TEXT, fontSize: '0.875rem' }}>{opt.label}</span>
+                      {opt.sub && <span style={{ color: MUTED, fontSize: '0.8125rem', marginLeft: '0.5rem' }}>{opt.sub}</span>}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+            {(useNewCard || !user?.card_last4) && (
+              <div style={{ padding: '1rem', background: BG, border: `1px solid ${BDR}`, borderRadius: '0.5rem' }}>
+                <CardElement options={{ style: { base: { color: TEXT, fontSize: '14px', fontFamily: "'Inter', system-ui, sans-serif", '::placeholder': { color: '#aaa' }, iconColor: G }, invalid: { color: '#dc2626' } } }} />
+              </div>
+            )}
+          </div>
+        )}
 
         {error && (
-          <div style={{ padding: '1rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '0.75rem', color: '#f87171', fontSize: '0.875rem' }}>
+          <div style={{ padding: '1rem', background: 'rgba(220,38,38,0.05)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: '0.5rem', color: '#dc2626', fontSize: '0.875rem' }}>
             {error}
           </div>
         )}
 
         <button type="submit" disabled={loading || !stripe}
-          style={{ ...btnBlue, width: '100%', padding: '1rem', borderRadius: '0.875rem', fontSize: '1rem', opacity: (loading || !stripe) ? 0.6 : 1 }}
+          style={{ ...btnDark, width: '100%', padding: '1rem', borderRadius: '0.875rem', fontSize: '1rem', opacity: (loading || !stripe) ? 0.6 : 1 }}
           onMouseEnter={onBtnEnter} onMouseLeave={onBtnLeave}>
           {loading ? 'Processing...' : coveredByMembership ? 'Book for Free' : `Confirm & Pay $${total.toFixed(2)}`}
         </button>
@@ -337,54 +305,50 @@ function CheckoutForm({ preselected }) {
       {/* Order Summary */}
       <div style={{ width: '17rem', flexShrink: 0 }}>
         <div style={{ ...cardBase, padding: '1.5rem', position: 'sticky', top: '6rem' }}>
-          <h3 style={{ color: '#fff', fontWeight: 600, fontSize: '1rem', marginBottom: '1.25rem' }}>Order Summary</h3>
+          <h3 style={{ color: TEXT, fontWeight: 600, fontSize: '1rem', marginBottom: '1.25rem' }}>Order Summary</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-              <span style={{ color: '#94A3B8' }}>Service</span>
-              <span style={{ color: '#fff' }}>{selectedService?.label}</span>
+              <span style={{ color: MUTED }}>Service</span>
+              <span style={{ color: TEXT }}>{selectedService?.label}</span>
             </div>
             {date && (
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                <span style={{ color: '#94A3B8' }}>Date</span>
-                <span style={{ color: '#fff' }}>{new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                <span style={{ color: MUTED }}>Date</span>
+                <span style={{ color: TEXT }}>{new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
               </div>
             )}
             {timeSlot && (
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                <span style={{ color: '#94A3B8' }}>Time</span>
-                <span style={{ color: '#fff' }}>{timeSlot}</span>
+                <span style={{ color: MUTED }}>Time</span>
+                <span style={{ color: TEXT }}>{timeSlot}</span>
               </div>
             )}
           </div>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+          <div style={{ borderTop: `1px solid ${BDR}`, paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-              <span style={{ color: '#94A3B8' }}>Subtotal</span>
+              <span style={{ color: MUTED }}>Subtotal</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                {discountPct > 0 && (
-                  <span style={{ color: '#64748B', fontSize: '0.75rem', textDecoration: 'line-through' }}>${basePrice.toFixed(2)}</span>
-                )}
-                <span style={{ color: '#fff' }}>{coveredByMembership ? 'Free' : `$${price.toFixed(2)}`}</span>
+                {discountPct > 0 && <span style={{ color: '#aaa', fontSize: '0.75rem', textDecoration: 'line-through' }}>${basePrice.toFixed(2)}</span>}
+                <span style={{ color: TEXT }}>{coveredByMembership ? 'Free' : `$${price.toFixed(2)}`}</span>
               </div>
             </div>
             {discountPct > 0 && !coveredByMembership && (
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                <span style={{ color: '#facc15' }}>Member discount ({Math.round(discountPct * 100)}%)</span>
-                <span style={{ color: '#facc15' }}>-${(basePrice * discountPct).toFixed(2)}</span>
+                <span style={{ color: '#b45309' }}>Member discount ({Math.round(discountPct * 100)}%)</span>
+                <span style={{ color: '#b45309' }}>-${(basePrice * discountPct).toFixed(2)}</span>
               </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-              <span style={{ color: '#94A3B8' }}>Tax (9%)</span>
-              <span style={{ color: '#fff' }}>${tax.toFixed(2)}</span>
+              <span style={{ color: MUTED }}>Tax (9%)</span>
+              <span style={{ color: TEXT }}>${tax.toFixed(2)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, paddingTop: '0.625rem', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-              <span style={{ color: '#fff' }}>Total</span>
-              <span style={{ color: coveredByMembership ? '#4ade80' : '#60a5fa', fontSize: '1.125rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, paddingTop: '0.625rem', borderTop: `1px solid ${BDR}` }}>
+              <span style={{ color: TEXT }}>Total</span>
+              <span style={{ color: coveredByMembership ? '#16a34a' : G, fontSize: '1.125rem' }}>
                 {coveredByMembership ? 'Free' : `$${total.toFixed(2)}`}
               </span>
             </div>
-            {coveredByMembership && (
-              <p style={{ color: '#4ade80', fontSize: '0.75rem', marginTop: '0.375rem' }}>✓ Covered by your membership</p>
-            )}
+            {coveredByMembership && <p style={{ color: '#16a34a', fontSize: '0.75rem', marginTop: '0.375rem' }}>✓ Covered by your membership</p>}
           </div>
         </div>
       </div>
@@ -402,34 +366,31 @@ export default function ServiceCheckoutPage() {
 
   useEffect(() => { if (user) setProceedAs('user') }, [])
 
-  const cardBase = {
-    background: 'linear-gradient(145deg, #0F2040 0%, #0d1b33 100%)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-    borderRadius: '1.25rem',
-  }
-
   return (
-    <div style={{ minHeight: '100vh', background: '#0A1628', fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="checker-bg" style={{ minHeight: '100vh', backgroundColor: BG, fontFamily: "'Inter', system-ui, sans-serif", color: TEXT }}>
       <Navbar />
       <div style={{ maxWidth: '64rem', margin: '0 auto', padding: '7rem 1.5rem 4rem' }}>
-        <h1 style={{ fontSize: '1.875rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', marginBottom: '2rem' }}>Book Your Service</h1>
+        <h1 style={{ fontSize: '1.875rem', fontWeight: 700, color: TEXT, letterSpacing: '-0.02em', marginBottom: '2rem' }}>Book Your Service</h1>
 
         {!user && !proceedAs && (
           <div style={{ maxWidth: '26rem', margin: '0 auto' }}>
-            <div style={{ ...cardBase, padding: '2.5rem', textAlign: 'center' }}>
-              <div style={{ width: '3.5rem', height: '3.5rem', borderRadius: '9999px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.5rem' }}>
+            <div style={{ background: CARD, border: `1px solid ${BDR}`, borderRadius: '0.875rem', padding: '2.5rem', textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+              <div style={{ width: '3.5rem', height: '3.5rem', borderRadius: '9999px', background: 'rgba(200,169,110,0.1)', border: '1px solid rgba(200,169,110,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.5rem' }}>
                 🚗
               </div>
-              <h2 style={{ color: '#fff', fontWeight: 700, fontSize: '1.25rem', marginBottom: '0.5rem' }}>How would you like to proceed?</h2>
-              <p style={{ color: '#94A3B8', fontSize: '0.875rem', marginBottom: '1.75rem' }}>Sign in to save booking history and use saved payment details.</p>
+              <h2 style={{ color: TEXT, fontWeight: 700, fontSize: '1.25rem', marginBottom: '0.5rem' }}>How would you like to proceed?</h2>
+              <p style={{ color: MUTED, fontSize: '0.875rem', marginBottom: '1.75rem' }}>Sign in to save booking history and use saved payment details.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <button onClick={() => navigate('/login', { state: { redirectTo: '/checkout/service' } })}
-                  style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)', boxShadow: '0 4px 20px rgba(59,130,246,0.35)', border: 'none', cursor: 'pointer', padding: '0.875rem', borderRadius: '0.75rem', fontSize: '0.9375rem', fontWeight: 600, color: '#fff', fontFamily: "'Inter', system-ui, sans-serif" }}>
+                  style={{ background: '#111111', border: 'none', cursor: 'pointer', padding: '0.875rem', borderRadius: '0.5rem', fontSize: '0.9375rem', fontWeight: 700, color: '#f0efec', fontFamily: "'Inter', system-ui, sans-serif", transition: 'all 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#333'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#111111'}>
                   Login / Sign Up
                 </button>
                 <button onClick={() => setProceedAs('guest')}
-                  style={{ padding: '0.875rem', borderRadius: '0.75rem', fontSize: '0.9375rem', fontWeight: 600, color: '#fff', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", transition: 'all 0.2s' }}>
+                  style={{ padding: '0.875rem', borderRadius: '0.5rem', fontSize: '0.9375rem', fontWeight: 600, color: TEXT, background: 'transparent', border: `1px solid ${BDR}`, cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", transition: 'all 0.2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = BDR }}>
                   Continue as Guest
                 </button>
               </div>
