@@ -106,12 +106,12 @@ export default function LandingPage() {
         {/* Animated car watermarks */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
           {[
-            { top: '18%',  size: '1.75rem', duration: '22s', delay: '0s',    opacity: 0.07 },
-            { top: '38%',  size: '1.25rem', duration: '30s', delay: '-9s',   opacity: 0.05 },
-            { top: '56%',  size: '2.25rem', duration: '18s', delay: '-4s',   opacity: 0.06 },
-            { top: '72%',  size: '1rem',    duration: '35s', delay: '-17s',  opacity: 0.04 },
-            { top: '85%',  size: '1.75rem', duration: '25s', delay: '-12s',  opacity: 0.05 },
-            { top: '28%',  size: '1rem',    duration: '40s', delay: '-22s',  opacity: 0.035 },
+            { top: '16%',  size: '2.5rem',  duration: '22s', delay: '0s',    opacity: 0.18 },
+            { top: '36%',  size: '1.75rem', duration: '30s', delay: '-9s',   opacity: 0.14 },
+            { top: '54%',  size: '3rem',    duration: '18s', delay: '-4s',   opacity: 0.16 },
+            { top: '70%',  size: '1.5rem',  duration: '35s', delay: '-17s',  opacity: 0.12 },
+            { top: '84%',  size: '2.25rem', duration: '25s', delay: '-12s',  opacity: 0.15 },
+            { top: '26%',  size: '1.5rem',  duration: '40s', delay: '-22s',  opacity: 0.10 },
           ].map((car, i) => (
             <span key={i} style={{
               position: 'absolute',
