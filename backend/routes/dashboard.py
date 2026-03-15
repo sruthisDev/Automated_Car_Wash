@@ -1,3 +1,4 @@
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -76,8 +77,6 @@ def update_name(payload: UpdateNameRequest, token: str, db: Session = Depends(ge
 
 @router.put("/profile/password")
 def change_password(payload: ChangePasswordRequest, token: str, db: Session = Depends(get_db)):
-    import bcrypt
-
     user = get_current_user(token, db)
     if not bcrypt.checkpw(payload.current_password.encode("utf-8"), user.password_hash.encode("utf-8")):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
