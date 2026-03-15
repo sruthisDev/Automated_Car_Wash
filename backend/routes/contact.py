@@ -44,7 +44,6 @@ async def send_contact_notification(name: str, email: str, subject: str, message
         <table width="560" cellpadding="0" cellspacing="0" border="0"
                style="background:#0F2040;border-radius:16px;border:1px solid rgba(255,255,255,0.1);overflow:hidden;max-width:560px;">
 
-          <!-- Header -->
           <tr>
             <td align="center" style="padding:24px 32px;background:#0A1628;border-bottom:1px solid rgba(255,255,255,0.1);">
               <table cellpadding="0" cellspacing="0" border="0">
@@ -63,7 +62,6 @@ async def send_contact_notification(name: str, email: str, subject: str, message
             </td>
           </tr>
 
-          <!-- Title -->
           <tr>
             <td style="padding:28px 32px 16px;">
               <table cellpadding="0" cellspacing="0" border="0">
@@ -78,7 +76,6 @@ async def send_contact_notification(name: str, email: str, subject: str, message
             </td>
           </tr>
 
-          <!-- Sender details -->
           <tr>
             <td style="padding:0 32px 16px;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -99,7 +96,6 @@ async def send_contact_notification(name: str, email: str, subject: str, message
             </td>
           </tr>
 
-          <!-- Message body -->
           <tr>
             <td style="padding:0 32px 36px;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -120,7 +116,6 @@ async def send_contact_notification(name: str, email: str, subject: str, message
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
             <td align="center" style="padding:18px 32px;background:#0A1628;border-top:1px solid rgba(255,255,255,0.1);">
               <p style="color:rgba(148,163,184,0.5);font-size:11px;margin:0;font-family:system-ui,sans-serif;">
@@ -152,7 +147,6 @@ async def send_contact_notification(name: str, email: str, subject: str, message
 
 @router.post("")
 async def submit_contact(payload: ContactRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    # Store in DB
     contact = ContactMessage(
         name=payload.name,
         email=payload.email,
@@ -162,7 +156,6 @@ async def submit_contact(payload: ContactRequest, background_tasks: BackgroundTa
     db.add(contact)
     db.commit()
 
-    # Send email notification in background
     background_tasks.add_task(
         send_contact_notification,
         payload.name,

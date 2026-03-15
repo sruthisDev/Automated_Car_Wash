@@ -25,10 +25,7 @@ node_modules/
 frontend/dist/
 
 # ─── VS Code ──────────────────────────────────────────────
-.vscode/settings.json
-
-# Keep launch.json (useful for team debugging setup)
-# .vscode/launch.json  ← intentionally tracked
+.vscode/
 
 # ─── OS / System ──────────────────────────────────────────
 .DS_Store

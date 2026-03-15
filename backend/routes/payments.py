@@ -18,7 +18,7 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 router = APIRouter()
 
-TAX_RATE = 0.09  # 9%
+TAX_RATE = 0.09  # california state tax
 
 SERVICE_PRICES = {
     "basic": 12.0,
@@ -84,8 +84,6 @@ def _ensure_stripe_customer(user: User, db: Session) -> str:
     return customer.id
 
 
-# ── Schemas ───────────────────────────────────────────
-
 class ConfirmationRequest(BaseModel):
     type: str
     customer_name: str | None = None
@@ -124,8 +122,6 @@ class MembershipCheckoutRequest(BaseModel):
     payment_method_id: str | None = None   # None = use saved card on file
 
 
-# ── Service Checkout ──────────────────────────────────
-
 @router.post("/service")
 async def checkout_service(
     payload: ServiceCheckoutRequest,
@@ -139,13 +135,12 @@ async def checkout_service(
     tax = round(price * TAX_RATE, 2)
     total = round(price + tax, 2)
 
-    # Resolve logged-in user (optional for service checkout)
     user = None
     if token:
         try:
             user = get_current_user(token, db)
         except Exception:
-            pass
+            pass  # guest checkout, token failure is non-fatal
 
     customer_email = user.email if user else payload.guest_email
     customer_name  = user.full_name if user else payload.guest_name
@@ -153,7 +148,6 @@ async def checkout_service(
     if not customer_email:
         raise HTTPException(status_code=400, detail="Email is required for guest checkout")
 
-    # ── Membership coverage & discount check ─────────
     covered = False
     discount_pct = 0.0
     if user and user.membership and user.membership.status == "active":
@@ -163,14 +157,12 @@ async def checkout_service(
         else:
             discount_pct = MEMBERSHIP_DISCOUNTS.get(user.membership.plan, 0.0)
 
-    # Apply member discount to non-covered services
     if not covered and discount_pct > 0:
         price = round(price * (1 - discount_pct), 2)
         tax   = round(price * TAX_RATE, 2)
         total = round(price + tax, 2)
 
     if covered:
-        # Free booking — no Stripe charge
         booking = Booking(
             user_id=user.id,
             service=payload.service,
@@ -205,34 +197,29 @@ async def checkout_service(
             "card_brand": None,
         }
 
-    # ── Paid booking ──────────────────────────────────
     try:
-        # Determine payment method to charge
         if payload.payment_method_id:
-            # New card provided from frontend
             pm_id = payload.payment_method_id
             if user:
                 customer_id = _ensure_stripe_customer(user, db)
                 stripe.PaymentMethod.attach(pm_id, customer=customer_id)
             else:
-                # Guest — create one-time customer
                 customer = stripe.Customer.create(email=customer_email, name=customer_name)
                 customer_id = customer.id
                 stripe.PaymentMethod.attach(pm_id, customer=customer_id)
         elif user and user.stripe_payment_method_id:
-            # Use saved card on file
             pm_id = user.stripe_payment_method_id
             customer_id = _ensure_stripe_customer(user, db)
         else:
             raise HTTPException(status_code=400, detail="No payment method provided")
 
         intent = stripe.PaymentIntent.create(
-            amount=int(total * 100),
+            amount=int(total * 100),  # stripe expects cents
             currency="usd",
             customer=customer_id,
             payment_method=pm_id,
             confirm=True,
-            automatic_payment_methods={"enabled": True, "allow_redirects": "never"},
+            automatic_payment_methods={"enabled": True, "allow_redirects": "never"},  # prevents 3DS redirects breaking server-side confirm
             description=f"LuxeWash — {SERVICE_LABELS[payload.service]}",
             receipt_email=customer_email,
         )
@@ -240,7 +227,6 @@ async def checkout_service(
         if intent.status != "succeeded":
             raise HTTPException(status_code=400, detail="Payment failed")
 
-        # Save card details on user if new card was used
         if user and payload.payment_method_id:
             _save_card_to_user(user, pm_id)
 
@@ -289,8 +275,6 @@ async def checkout_service(
         raise HTTPException(status_code=400, detail=f"Payment error: {str(e.user_message)}")
 
 
-# ── Membership Checkout ───────────────────────────────
-
 @router.post("/membership")
 async def checkout_membership(
     payload: MembershipCheckoutRequest,
@@ -306,7 +290,6 @@ async def checkout_membership(
     try:
         customer_id = _ensure_stripe_customer(user, db)
 
-        # Determine payment method
         if payload.payment_method_id:
             pm_id = payload.payment_method_id
             stripe.PaymentMethod.attach(pm_id, customer=customer_id)
@@ -329,13 +312,11 @@ async def checkout_membership(
         if intent.status != "succeeded":
             raise HTTPException(status_code=400, detail="Payment failed")
 
-        # Save card details if new card was used
         if payload.payment_method_id:
             _save_card_to_user(user, pm_id)
 
-        renews = datetime.utcnow() + timedelta(days=30)
+        renews = datetime.utcnow() + timedelta(days=30)  # monthly billing cycle
 
-        # Create or update membership
         if user.membership:
             user.membership.plan = payload.plan
             user.membership.price = price
@@ -375,8 +356,6 @@ async def checkout_membership(
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=f"Payment error: {str(e.user_message)}")
 
-
-# ── Update saved card ─────────────────────────────────
 
 class UpdateCardRequest(BaseModel):
     payment_method_id: str

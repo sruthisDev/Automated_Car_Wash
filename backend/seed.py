@@ -20,13 +20,11 @@ def hash_pw(plain: str) -> str:
 def run_seed():
     db = SessionLocal()
     try:
-        # Only seed if no users exist
         if db.query(User).count() > 0:
             return
 
         now = datetime.utcnow()
 
-        # ── Users ────────────────────────────────────────
         admin = User(
             full_name="Admin LuxeWash",
             email="admin@luxewash.com",
@@ -50,7 +48,6 @@ def run_seed():
         db.add_all([admin, sarah])
         db.flush()  # get IDs before creating related records
 
-        # ── Membership (Sarah — Premium, active) ─────────
         membership = Membership(
             user_id=sarah.id,
             plan="premium",
@@ -61,9 +58,7 @@ def run_seed():
         )
         db.add(membership)
 
-        # ── Bookings ─────────────────────────────────────
         bookings = [
-            # Sarah — completed
             Booking(
                 user_id=sarah.id,
                 service="deluxe",
@@ -75,7 +70,6 @@ def run_seed():
                 status="completed",
                 booking_ref="LW-20250218-1001",
             ),
-            # Sarah — completed
             Booking(
                 user_id=sarah.id,
                 service="basic",
@@ -87,7 +81,6 @@ def run_seed():
                 status="completed",
                 booking_ref="LW-20250302-1002",
             ),
-            # Sarah — upcoming
             Booking(
                 user_id=sarah.id,
                 service="premium",
@@ -99,7 +92,6 @@ def run_seed():
                 status="upcoming",
                 booking_ref="LW-20250315-1003",
             ),
-            # Sarah — cancelled
             Booking(
                 user_id=sarah.id,
                 service="deluxe",
@@ -111,7 +103,6 @@ def run_seed():
                 status="cancelled",
                 booking_ref="LW-20250312-1004",
             ),
-            # Admin — completed
             Booking(
                 user_id=admin.id,
                 service="premium",
@@ -123,7 +114,6 @@ def run_seed():
                 status="completed",
                 booking_ref="LW-20250223-2001",
             ),
-            # Admin — upcoming
             Booking(
                 user_id=admin.id,
                 service="basic",
@@ -135,7 +125,6 @@ def run_seed():
                 status="upcoming",
                 booking_ref="LW-20250313-2002",
             ),
-            # Guest booking (no user_id)
             Booking(
                 user_id=None,
                 guest_name="Marcus Johnson",
@@ -152,7 +141,6 @@ def run_seed():
         ]
         db.add_all(bookings)
 
-        # ── Contact Messages ──────────────────────────────
         messages = [
             ContactMessage(
                 name="Tom Rivera",

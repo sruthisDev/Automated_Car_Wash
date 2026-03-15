@@ -24,7 +24,7 @@ def auto_complete_past_bookings(user_id: int, db: Session):
         try:
             appt_dt = datetime.strptime(
                 f"{b.appointment_date} {b.appointment_time}", "%Y-%m-%d %I:%M %p"
-            ).replace(tzinfo=PACIFIC)
+            ).replace(tzinfo=PACIFIC)  # stored as local time, not UTC — no conversion needed
             if appt_dt < now:
                 b.status = "completed"
                 changed = True
@@ -42,8 +42,6 @@ class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str
 
-
-# ── GET full profile ──────────────────────────────────
 
 @router.get("/profile")
 def get_profile(token: str, db: Session = Depends(get_db)):
@@ -68,18 +66,13 @@ def get_profile(token: str, db: Session = Depends(get_db)):
     }
 
 
-# ── UPDATE name ───────────────────────────────────────
-
 @router.put("/profile/name")
 def update_name(payload: UpdateNameRequest, token: str, db: Session = Depends(get_db)):
     user = get_current_user(token, db)
     user.full_name = payload.full_name
     db.commit()
-    # Update stored user data
     return {"full_name": user.full_name}
 
-
-# ── CHANGE password ───────────────────────────────────
 
 @router.put("/profile/password")
 def change_password(payload: ChangePasswordRequest, token: str, db: Session = Depends(get_db)):
@@ -93,8 +86,6 @@ def change_password(payload: ChangePasswordRequest, token: str, db: Session = De
     db.commit()
     return {"message": "Password updated successfully"}
 
-
-# ── GET appointments ──────────────────────────────────
 
 @router.get("/appointments")
 def get_appointments(token: str, db: Session = Depends(get_db)):
@@ -122,8 +113,6 @@ def get_appointments(token: str, db: Session = Depends(get_db)):
     ]
 
 
-# ── CANCEL appointment ────────────────────────────────
-
 @router.put("/appointments/{booking_id}/cancel")
 def cancel_appointment(booking_id: int, token: str, db: Session = Depends(get_db)):
     user = get_current_user(token, db)
@@ -141,8 +130,6 @@ def cancel_appointment(booking_id: int, token: str, db: Session = Depends(get_db
     db.commit()
     return {"message": "Booking cancelled"}
 
-
-# ── CANCEL membership ─────────────────────────────────
 
 @router.put("/membership/cancel")
 def cancel_membership(token: str, db: Session = Depends(get_db)):

@@ -28,6 +28,7 @@ const onInputBlur  = (e) => { e.currentTarget.style.borderColor = BDR }
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' })
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -84,7 +85,25 @@ export default function LoginPage() {
                   <label style={{ color: MUTED, fontSize: '0.8125rem', fontWeight: 500 }}>Password</label>
                   <Link to="/forgot-password" style={{ color: G, fontSize: '0.8125rem', textDecoration: 'none', fontWeight: 500 }}>Forgot password?</Link>
                 </div>
-                <input name="password" type="password" value={form.password} onChange={handleChange} required placeholder="••••••••" style={inputBase} onFocus={onInputFocus} onBlur={onInputBlur} />
+                <div style={{ position: 'relative' }}>
+                  <input name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={handleChange} required placeholder="••••••••" style={{ ...inputBase, paddingRight: '2.75rem' }} onFocus={onInputFocus} onBlur={onInputBlur} />
+                  <button type="button" onClick={() => setShowPassword(v => !v)}
+                    style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: MUTED, display: 'flex', alignItems: 'center' }}>
+                    {showPassword ? (
+                      <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/>
+                        <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.12 14.12A3 3 0 119.88 9.88"/>
+                        <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round"/>
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <button type="submit" disabled={loading}

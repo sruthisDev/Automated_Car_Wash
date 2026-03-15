@@ -32,7 +32,6 @@ const btnDark = { background: '#111111', border: 'none', cursor: 'pointer', tran
 const onBtnEnter = (e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.background = '#333'; e.currentTarget.style.transform = 'translateY(-1px)' } }
 const onBtnLeave = (e) => { e.currentTarget.style.background = '#111111'; e.currentTarget.style.transform = 'translateY(0)' }
 
-// ── Membership Form ────────────────────────────────────
 function MembershipForm({ preselected }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -242,7 +241,6 @@ function MembershipForm({ preselected }) {
   )
 }
 
-// ── Page ───────────────────────────────────────────────
 export default function MembershipCheckoutPage() {
   const location = useLocation()
   const navigate = useNavigate()

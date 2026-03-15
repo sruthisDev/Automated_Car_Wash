@@ -41,7 +41,6 @@ def get_user_context(token: str, db: Session) -> Optional[dict]:
 
         ctx = {"name": user.full_name.split()[0]}
 
-        # Membership
         m = db.query(Membership).filter(Membership.user_id == user.id).first()
         if m:
             ctx["membership"] = {
@@ -55,10 +54,8 @@ def get_user_context(token: str, db: Session) -> Optional[dict]:
         else:
             ctx["membership"] = None
 
-        # Auto-complete past bookings before querying
         auto_complete_past_bookings(user.id, db)
 
-        # Upcoming bookings (status=upcoming, sorted by date)
         bookings = (
             db.query(Booking)
             .filter(Booking.user_id == user.id, Booking.status == "upcoming")
@@ -83,7 +80,6 @@ def get_user_context(token: str, db: Session) -> Optional[dict]:
 def get_response(msg: str, ctx: Optional[dict] = None) -> str:
     m = msg.lower().strip()
 
-    # ── PERSONAL QUERIES (require login) ──────────────────────
     is_personal = any(k in m for k in [
         'my appointment', 'my booking', 'next appointment', 'upcoming appointment',
         'my schedule', 'when is my', 'my next', 'my membership', 'my plan',
@@ -102,7 +98,6 @@ def get_response(msg: str, ctx: Optional[dict] = None) -> str:
 
         name = ctx["name"]
 
-        # ── My Appointments ───────────────────────────────────
         if any(k in m for k in ['appointment', 'booking', 'schedule', 'next', 'upcoming']):
             bookings = ctx.get("bookings", [])
             if not bookings:
@@ -117,7 +112,6 @@ def get_response(msg: str, ctx: Optional[dict] = None) -> str:
                 lines.append(f"   Ref: {b['ref']}\n")
             return "\n".join(lines).strip()
 
-        # ── My Membership ─────────────────────────────────────
         mem = ctx.get("membership")
         if not mem:
             return (
@@ -137,7 +131,6 @@ def get_response(msg: str, ctx: Optional[dict] = None) -> str:
             reply += f"Access until: {mem['ends_at']}\n"
         return reply.strip()
 
-    # ── IDENTITY ──────────────────────────────────────────────
     if any(k in m for k in ['who are you', 'what are you', 'who r u', 'are you a bot', 'are you human',
                              'are you ai', 'your name', 'introduce yourself', 'what can you do',
                              'what do you do', 'how can you help']):
@@ -151,7 +144,6 @@ def get_response(msg: str, ctx: Optional[dict] = None) -> str:
             "Just ask me anything!"
         )
 
-    # ── GREETINGS ─────────────────────────────────────────────
     if any(k in m for k in ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'howdy', 'sup']):
         if ctx:
             return (
@@ -171,7 +163,6 @@ def get_response(msg: str, ctx: Optional[dict] = None) -> str:
     if any(k in m for k in ['thank', 'thanks', 'thx', 'ty']):
         return "You're welcome! 😊 Feel free to ask anything else about our services, memberships, or appointments."
 
-    # ── SERVICES — specific ───────────────────────────────────
     if any(k in m for k in ['basic wash', 'basic']):
         return (
             "🚿 Basic Wash — $12\n\n"
@@ -217,7 +208,6 @@ def get_response(msg: str, ctx: Optional[dict] = None) -> str:
             "Ask me about any specific wash for more details!"
         )
 
-    # ── MEMBERSHIPS — specific ────────────────────────────────
     if any(k in m for k in ['standard plan', 'standard membership', 'standard']):
         return (
             "⭐ Standard Membership — $29/mo\n\n"
@@ -264,7 +254,6 @@ def get_response(msg: str, ctx: Optional[dict] = None) -> str:
             "Ask me about any specific plan for full details!"
         )
 
-    # ── APPOINTMENTS / LOCATION / HOURS ───────────────────────
     if any(k in m for k in ['hour', 'open', 'close', 'timing', 'when are you', 'operating']):
         return (
             "🕐 LuxeWash Hours\n\n"
@@ -300,7 +289,6 @@ def get_response(msg: str, ctx: Optional[dict] = None) -> str:
             "🕐 Mon–Sat: 8am–7pm  |  Sun: 9am–5pm"
         )
 
-    # ── OFF-TOPIC DEFLECTION ──────────────────────────────────
     return (
         "I'm sorry, I can only assist with LuxeWash services, memberships, and appointments. "
         "For anything else, please contact us at +1 (555) 123-4567 or visit our Contact page."

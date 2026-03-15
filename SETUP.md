@@ -1,181 +1,113 @@
-# LuxeWash — Setup & Hosting Guide
+# LuxeWash - Setup
 
-## 1. First-Time Setup
+This guide gives info on how to deploy this website
 
-### Backend
-```bash
-cd backend
-python -m venv venv
-./venv/Scripts/pip install -r requirements.txt
+
+## Prereqs
+
+- Python 3.11+
+- Node.js 18+
+- Git
+- Stripe Account for payment keys
+- Gmail for smtp
+
+
+## 1. Backend setup
+
+
+Install dependencies:
+
+pip install -r requirements.txt
+
+Create a `.env` file inside the `backend/` folder with the following keys
+
+```env
+SECRET_KEY=pick-any-long-random-string-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
+
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_gmail@gmail.com
+SMTP_PASSWORD=your_gmail_app_password
+SMTP_FROM=LuxeWash <your_gmail@gmail.com>
+
+DATABASE_URL=sqlite:///./luxewash.db
+
+APP_BASE_URL=http://localhost
 ```
 
-Edit `backend/.env` and fill in:
-- `STRIPE_SECRET_KEY` — from Stripe Dashboard → Developers → API Keys (use test key)
-- `STRIPE_WEBHOOK_SECRET` — from Stripe Dashboard → Webhooks
-- `SMTP_USER` — your Gmail address
-- `SMTP_PASSWORD` — Gmail App Password (not your regular password)
-  → Google Account → Security → 2-Step Verification → App passwords
+> **Note on Gmail:** You need to generate an App Password, not your regular Gmail password.
+> Go to your Google account → Security → 2-Step Verification → App Passwords. Generate one for "Mail".
 
-### Frontend
+> **Note on Stripe:** Get your keys from the Stripe dashboard under Developers → API Keys. Use the test keys (they start with `sk_test_` and `pk_test_`).
+
+Start the backend:
+
+uvicorn main:app --reload --port 8000
+
+The database file (`luxewash.db`) and seed data are created automatically on first run.
+
+
+## 2. Frontend setup
+
+Open a new terminal, go into the frontend folder:
+
 ```bash
 cd frontend
 npm install
 ```
 
-Edit `frontend/.env`:
-- `VITE_STRIPE_PUBLIC_KEY` — from Stripe Dashboard (publishable key, starts with pk_test_)
+Create a `.env` file inside `frontend/`:
 
-Build for production:
-```bash
-cd frontend
-npm run build
+```env
+VITE_STRIPE_PUBLIC_KEY=pk_test_your_stripe_publishable_key
 ```
 
----
+This should be the same publishable key you put in the backend `.env`.
 
-## 2. Run Locally (Dev)
+Start the frontend:
 
-**Terminal 1 — Backend:**
-```bash
-cd backend
-./venv/Scripts/uvicorn main:app --reload --port 8000
-```
-
-**Terminal 2 — Frontend:**
-```bash
-cd frontend
 npm run dev
-```
 
-Open: http://localhost:5173
+## 3. Test credentials (seed data)
+
+The app seeds two accounts on first startup:
+
+| Role  | Email                  | Password    |
+|-------|------------------------|-------------|
+| Admin | admin@luxewash.com     | Admin@1234  |
+| User  | sarah@example.com      | Sarah@1234  |
+
+Sarah's account comes with a Premium membership and a few sample bookings so you can test the dashboard right away.
 
 ---
 
-## 3. PM2 Auto-Start Setup (Windows — Resiliency)
+## 5. Production deployment (Windows + IIS)
 
-### Install PM2
+If you're deploying on a Windows server with IIS, there are a few extra steps.
+
+**Register the backend as a Windows service using NSSM:**
+
 ```bash
-npm install -g pm2
-npm install -g pm2-windows-service
+nssm install LuxewashBackend
 ```
 
-### Build frontend first
+Set the path to `uvicorn.exe` inside the venv and the arguments to `main:app --port 8000`. This makes the backend start automatically on boot.
+
+**Frontend — build for production:**
+
 ```bash
 cd frontend
 npm run build
 ```
 
-### Start with PM2
-```bash
-cd C:/Masters/repo/Automated_Car_Wash
-pm2 start ecosystem.config.js
-pm2 save
-```
+This creates a `dist/` folder. Point your IIS site to serve from that folder.
 
-### Install as Windows Service (auto-starts on reboot)
-```bash
-pm2-service-install -n LuxeWash
-```
+**IIS reverse proxy:**
 
-When prompted, set the PM2_HOME path and confirm.
-
-### Verify running
-```bash
-pm2 status
-pm2 logs
-```
-
----
-
-## 4. IIS Setup (Reverse Proxy)
-
-### Prerequisites
-- IIS installed (Windows Features → Internet Information Services)
-- URL Rewrite module: https://www.iis.net/downloads/microsoft/url-rewrite
-- ARR (Application Request Routing): https://www.iis.net/downloads/microsoft/application-request-routing
-
-### Steps
-
-1. Open IIS Manager
-2. Click the server node → Application Request Routing Cache → Server Proxy Settings → Enable proxy ✅
-3. Create a new website:
-   - Site name: LuxeWash
-   - Physical path: C:\Masters\repo\Automated_Car_Wash\frontend\dist
-   - Port: 80
-
-4. Add a `web.config` to `frontend/dist/`:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-  <system.webServer>
-    <rewrite>
-      <rules>
-        <!-- API → FastAPI backend -->
-        <rule name="API Proxy" stopProcessing="true">
-          <match url="^api/(.*)" />
-          <action type="Rewrite" url="http://localhost:8000/api/{R:1}" />
-        </rule>
-        <!-- SPA fallback for React Router -->
-        <rule name="SPA Fallback" stopProcessing="true">
-          <match url=".*" />
-          <conditions logicalGrouping="MatchAll">
-            <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
-            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
-          </conditions>
-          <action type="Rewrite" url="/index.html" />
-        </rule>
-      </rules>
-    </rewrite>
-  </system.webServer>
-</configuration>
-```
-
-5. Restart IIS: `iisreset`
-
----
-
-## 5. Gmail App Password Setup
-
-1. Go to myaccount.google.com
-2. Security → 2-Step Verification (must be enabled)
-3. Search "App passwords"
-4. Create new → name it "LuxeWash"
-5. Copy the 16-character password
-6. Paste into `backend/.env` as `SMTP_PASSWORD`
-
----
-
-## 6. Stripe Test Cards
-
-Use these card numbers for testing:
-
-| Card | Number |
-|------|--------|
-| Visa (success) | 4242 4242 4242 4242 |
-| Declined | 4000 0000 0000 0002 |
-| Insufficient funds | 4000 0000 0000 9995 |
-
-Expiry: any future date | CVV: any 3 digits | ZIP: any 5 digits
-
----
-
-## 7. File Structure
-
-```
-Automated_Car_Wash/
-├── frontend/          React + Vite
-│   ├── src/
-│   │   ├── pages/     All page components
-│   │   ├── components/ Navbar, Footer
-│   ├── dist/          Production build (after npm run build)
-│   └── .env           Stripe public key
-├── backend/           FastAPI + Python
-│   ├── routes/        auth, contact, dashboard, payments, email
-│   ├── models/        SQLAlchemy models
-│   ├── main.py        FastAPI entry point
-│   ├── database.py    SQLite connection
-│   ├── luxewash.db    SQLite database file
-│   └── .env           Secrets (Stripe, Gmail, JWT)
-└── ecosystem.config.js  PM2 process config
-```
+Install the URL Rewrite and Application Request Routing (ARR) modules for IIS.
+Add a `web.config` to the site root to proxy `/api/*` requests to `http://localhost:8000` and fall back all other routes to `index.html` for the React SPA.
