@@ -1,4 +1,6 @@
-# LuxeWash - Setup
+## By Sruthi Satyavarapu
+
+## LuxeWash - Setup
 
 This guide gives info on how to deploy this website
 
