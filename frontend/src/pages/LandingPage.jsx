@@ -180,7 +180,7 @@ export default function LandingPage() {
       </div>
 
       {/* ── SERVICES ─────────────────────────────────────── */}
-      <section id="services" style={{ padding: '6rem 5%', backgroundColor: BG }}>
+      <section id="services" style={{ padding: '3rem 5% 6rem', backgroundColor: BG }}>
         <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
           <div className="reveal" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '3rem', gap: '2rem', flexWrap: 'wrap', paddingBottom: '2rem', borderBottom: `1px solid ${BDR}` }}>
             <div>
@@ -250,14 +250,14 @@ export default function LandingPage() {
       </section>
 
       {/* ── MEMBERSHIPS ──────────────────────────────────── */}
-      <section id="memberships" style={{ padding: '6rem 5%', backgroundColor: BG }}>
+      <section id="memberships" style={{ padding: '3rem 5% 6rem', backgroundColor: BG }}>
         <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
           <div className="reveal" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <p style={{ ...lbl, display: 'block', marginBottom: '0.875rem' }}>Save More</p>
             <h2 style={h2s}>Membership Plans</h2>
             <p style={{ ...subs, maxWidth: '30rem', margin: '1rem auto 0' }}>Unlimited washes, exclusive perks, and the best value for regular drivers.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'stretch' }}>
             {memberships.map((plan, i) => (
               <div key={plan.id} className={`reveal reveal-d${i + 1}`}
                 style={{
