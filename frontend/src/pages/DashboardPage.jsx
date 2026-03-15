@@ -33,7 +33,6 @@ const btnDark = { background: '#111111', border: 'none', cursor: 'pointer', tran
 const onBtnEnter = (e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.background = '#333'; e.currentTarget.style.transform = 'translateY(-1px)' } }
 const onBtnLeave = (e) => { e.currentTarget.style.background = '#111111'; e.currentTarget.style.transform = 'translateY(0)' }
 
-// ── Field component ────────────────────────────────────
 function Field({ label, value, onChange, type = 'text', placeholder, readOnly }) {
   return (
     <div>
@@ -44,7 +43,6 @@ function Field({ label, value, onChange, type = 'text', placeholder, readOnly })
   )
 }
 
-// ── Payment Details Card ───────────────────────────────
 function PaymentDetailsCard({ profile, token, onProfileUpdate }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -118,7 +116,6 @@ function PaymentDetailsCard({ profile, token, onProfileUpdate }) {
   )
 }
 
-// ── Profile Tab ────────────────────────────────────────
 function ProfileTab({ profile, token, onProfileUpdate }) {
   const navigate = useNavigate()
   const [nameEdit, setNameEdit] = useState(false)
@@ -274,7 +271,6 @@ function ProfileTab({ profile, token, onProfileUpdate }) {
   )
 }
 
-// ── Appointments Tab ───────────────────────────────────
 function AppointmentsTab({ token }) {
   const [appointments, setAppointments] = useState([])
   const [filter, setFilter] = useState('all')
@@ -366,7 +362,6 @@ function AppointmentsTab({ token }) {
   )
 }
 
-// ── Main Dashboard Page ────────────────────────────────
 export default function DashboardPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()

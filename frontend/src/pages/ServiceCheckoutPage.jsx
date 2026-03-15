@@ -54,7 +54,6 @@ const btnDark = { background: '#111111', border: 'none', cursor: 'pointer', tran
 const onBtnEnter = (e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.background = '#333'; e.currentTarget.style.transform = 'translateY(-1px)' } }
 const onBtnLeave = (e) => { e.currentTarget.style.background = '#111111'; e.currentTarget.style.transform = 'translateY(0)' }
 
-// ── Checkout Form ──────────────────────────────────────
 function CheckoutForm({ preselected }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -218,30 +217,32 @@ function CheckoutForm({ preselected }) {
         {/* Date */}
         <div style={{ ...cardBase, padding: '1.5rem' }}>
           {sectionTitle('Select Date')}
-          <input type="date" value={date} min={today} onChange={e => setDate(e.target.value)}
+          <input type="date" value={date} min={today} onChange={e => { setDate(e.target.value); setTimeSlot('') }}
             style={{ ...inputBase, colorScheme: 'light' }}
             onFocus={onInputFocus} onBlur={onInputBlur} />
         </div>
 
-        {/* Time Slots */}
-        <div style={{ ...cardBase, padding: '1.5rem' }}>
-          {sectionTitle('Select Time Slot')}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
-            {TIME_SLOTS.map(t => (
-              <button key={t} type="button" onClick={() => setTimeSlot(t)}
-                style={{
-                  padding: '0.5rem 0.25rem', borderRadius: '0.375rem', fontSize: '0.8125rem',
-                  fontWeight: 500, cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", transition: 'all 0.2s',
-                  ...(timeSlot === t
-                    ? { background: '#111111', color: '#f0efec', border: 'none' }
-                    : { background: BG, color: MUTED, border: `1px solid ${BDR}` }
-                  ),
-                }}>
-                {t}
-              </button>
-            ))}
+        {/* Time Slots — only shown after a date is selected */}
+        {date && (
+          <div style={{ ...cardBase, padding: '1.5rem' }}>
+            {sectionTitle('Select Time Slot')}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+              {TIME_SLOTS.map(t => (
+                <button key={t} type="button" onClick={() => setTimeSlot(t)}
+                  style={{
+                    padding: '0.5rem 0.25rem', borderRadius: '0.375rem', fontSize: '0.8125rem',
+                    fontWeight: 500, cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", transition: 'all 0.2s',
+                    ...(timeSlot === t
+                      ? { background: '#111111', color: '#f0efec', border: 'none' }
+                      : { background: BG, color: MUTED, border: `1px solid ${BDR}` }
+                    ),
+                  }}>
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Membership coverage banner */}
         {coveredByMembership && (
@@ -356,7 +357,6 @@ function CheckoutForm({ preselected }) {
   )
 }
 
-// ── Page ───────────────────────────────────────────────
 export default function ServiceCheckoutPage() {
   const location = useLocation()
   const navigate = useNavigate()

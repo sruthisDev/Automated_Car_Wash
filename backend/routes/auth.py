@@ -21,8 +21,6 @@ ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 1440))
 
 
-# ── Schemas ──────────────────────────────────────────
-
 class SignupRequest(BaseModel):
     full_name: str
     email: EmailStr
@@ -46,8 +44,6 @@ class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
 
-
-# ── Helpers ──────────────────────────────────────────
 
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
@@ -74,8 +70,6 @@ def get_current_user(token: str, db: Session) -> User:
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-
-# ── Routes ───────────────────────────────────────────
 
 @router.post("/signup")
 async def signup(payload: SignupRequest, db: Session = Depends(get_db)):
@@ -193,6 +187,6 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
     user.password_hash = hash_password(payload.new_password)
     user.reset_token = None
-    user.reset_token_expires = None
+    user.reset_token_expires = None  # invalidate token after use
     db.commit()
     return {"message": "Password reset successful"}
